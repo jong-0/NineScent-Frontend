@@ -4,7 +4,7 @@ import Home from '@/pages/Home.vue';
 // import Signup from '@/pages/Signup.vue';
 // import Category from '@/pages/Category.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
-// import Cart from '@/pages/CartPage.vue';
+import Cart from '@/pages/CartPage.vue';
 // import Checkout from '@/pages/Checkout.vue';
 // import OrderComplete from '@/pages/OrderComplete.vue';
 
@@ -14,7 +14,7 @@ const routes = [
     // { path: '/signup', component: Signup },
     // { path: '/category/:id', component: Category },
     // { path: '/product/:id', component: ProductDetail },
-    // { path: '/cart', component: Cart },
+    { path: '/cart', component: Cart },
     // { path: '/checkout', component: Checkout },
     // { path: '/order-complete', component: OrderComplete },
 ];
