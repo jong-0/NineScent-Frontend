@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '@/pages/Home.vue';
+import Checkout from '@/pages/Checkout.vue';
+import Address from '@/pages/Address.vue';
+import AddAddress from '@/pages/AddAddress.vue';
+import UpdateAddress from '@/pages/UpdateAddress.vue';
 // import Login from '@/pages/Login.vue';
 // import Signup from '@/pages/Signup.vue';
 // import Category from '@/pages/Category.vue';
@@ -7,6 +11,7 @@ import Home from '@/pages/Home.vue';
 // import Cart from '@/pages/CartPage.vue';
 // import Checkout from '@/pages/Checkout.vue';
 // import OrderComplete from '@/pages/OrderComplete.vue';
+
 
 const routes = [
     { path: '/', name: 'Home', component: Home },
@@ -17,6 +22,31 @@ const routes = [
     // { path: '/cart', component: Cart },
     // { path: '/checkout', component: Checkout },
     // { path: '/order-complete', component: OrderComplete },
+    {
+      path: '/',
+      name: 'home',
+      component: Home,
+    },
+    {
+      path: '/checkout',
+      name: 'Checkout',
+      component: Checkout,
+    },
+    {
+      path: '/address/:userNo',
+      name: 'Address',
+      component: Address,
+    },
+    {
+      path: '/addaddress',
+      name: 'AddAddress',
+      component: AddAddress,
+    },
+    {
+      path: '/updateaddress/:addrNo',
+      name: 'UpdateAddress',
+      component: UpdateAddress,
+    },
 ];
 
 const router = createRouter({
