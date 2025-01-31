@@ -22,7 +22,12 @@
           <span class="list-icon"><i class="fa-solid fa-q"></i></span>
           <span class="list-category">{{ categoryLabels[faq.category] }}</span>
           <span class="list-title">{{ faq.title }}</span>
-          <span @click.stop="deleteFaq(faq.faqId)"><i class="fa-solid fa-x"></i></span>
+          <span class="list-update" @click="editFaq(faq.faqId)"
+            ><i class="fa-regular fa-pen-to-square"></i
+          ></span>
+          <span class="list-delete" @click.stop="deleteFaq(faq.faqId)"
+            ><i class="fa-solid fa-x"></i
+          ></span>
         </button>
 
         <!-- 클릭된 FAQ의 답변을 바로 아래에 표시 -->
@@ -109,6 +114,10 @@ const addFaq = () => {
   router.push({ name: 'AddFaq' });
 };
 
+const editFaq = (faqId) => {
+  router.push({ name: 'UpdateFaq', params: { faqId } });
+};
+
 onMounted(() => {
   fetchFaqCategories();
 });
@@ -164,6 +173,15 @@ onMounted(() => {
 
 .list-title {
   flex: 1;
+}
+
+.list-update {
+  cursor: pointer;
+}
+
+.list-delete {
+  margin-left: 20px;
+  cursor: pointer;
 }
 
 button.active {
