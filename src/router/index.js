@@ -54,8 +54,13 @@ const routes = [
     component: CSCenter,
   },
   {
-    path: '/addfaq',
+    path: '/faq/add',
     name: 'AddFaq',
+    component: AddFaq,
+  },
+  {
+    path: '/faq/update/:faqId',
+    name: 'UpdateFaq',
     component: AddFaq,
   },
 ];
