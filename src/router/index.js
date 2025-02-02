@@ -10,23 +10,30 @@ import AddFaq from '@/pages/AddFaq.vue';
 // import Signup from '@/pages/Signup.vue';
 // import Category from '@/pages/Category.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
-// import Cart from '@/pages/CartPage.vue';
+import Cart from '@/pages/CartPage.vue';
 // import Checkout from '@/pages/Checkout.vue';
 // import OrderComplete from '@/pages/OrderComplete.vue';
 
 const routes = [
+
   { path: '/', name: 'Home', component: Home },
   // { path: '/login', component: Login },
   // { path: '/signup', component: Signup },
   // { path: '/category/:id', component: Category },
   // { path: '/product/:id', component: ProductDetail },
-  // { path: '/cart', component: Cart },
+  { path: '/cart', component: Cart },
   // { path: '/checkout', component: Checkout },
   // { path: '/order-complete', component: OrderComplete },
   {
     path: '/',
     name: 'home',
     component: Home,
+  },
+  
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: Cart,
   },
   {
     path: '/checkout',
@@ -63,6 +70,7 @@ const routes = [
     name: 'UpdateFaq',
     component: AddFaq,
   },
+
 ];
 
 const router = createRouter({
