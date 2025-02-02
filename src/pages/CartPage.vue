@@ -1,50 +1,65 @@
 <template>
     <div class="container mt-5">
         <h5 class="mb-4 text-center">장바구니</h5>
-        <h6 class="text-center mb-7">You are eligible for Free Shipping.</h6>
+        <h6 class="text-center mb-5">
+            {{ cartProducts.length > 0 ? '' : '장바구니가 비어 있습니다.' }}
+        </h6>
 
-        <div v-if="mockProducts.length > 0" class="row">
-            <div class="col-12 col-lg-7">
-                <template v-for="(product, i) in mockProducts" :key="i">
-                    <hr v-if="i !== 0" class="horizontal dark my-4" />
-                    <ProductCartItem
-                        :thumbSrc="product.thumb_src"
-                        :thumbAlt="product.thumb_alt"
-                        :title="product.title"
-                        :color="product.color"
-                        :size="product.size"
-                        :price="product.price"
-                        :stock="product.stock"
-                    />
-                </template>
+        <!-- ✅ 전체 선택 & 선택 삭제 버튼 -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center">
+                <input type="checkbox" v-model="isAllSelected" @change="toggleAllSelection" aria-label="select-all-items" class="me-2" />
+                <label for="select-all-items" class="mb-0">전체 선택</label>
             </div>
-            <div class="col-12 col-lg-5 mt-5 mt-lg-0">
-                <div class="card shadow-xs border bg-gray-100">
-                    <div class="card-body p-lg-5">
-                        <h5 class="mb-4">Order Summary</h5>
-                        <OrderSummary :subtotal="subtotal" />
-                        <button class="btn btn-dark btn-lg w-100">Checkout</button>
-                        <button class="btn btn-white btn-lg w-100">Continue Shopping</button>
-                        <p class="text-center">Tax included. Shipping calculated at checkout.</p>
-                    </div>
-                </div>
-                <!-- <p class="d-flex align-items-center justify-content-center text-body mt-4">
-                    <svg class="me-2" width="11" height="13" viewBox="0 0 11 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M3.21652 6.14286H7.78795V4.42857C7.78795 3.79762 7.56473 3.25893 7.1183 2.8125C6.67188 2.36607 6.13318 2.14286 5.50223 2.14286C4.87128 2.14286 4.33259 2.36607 3.88616 2.8125C3.43973 3.25893 3.21652 3.79762 3.21652 4.42857V6.14286ZM10.6451 7V12.1429C10.6451 12.381 10.5618 12.5833 10.3951 12.75C10.2284 12.9167 10.026 13 9.78795 13H1.21652C0.978423 13 0.776042 12.9167 0.609375 12.75C0.442708 12.5833 0.359375 12.381 0.359375 12.1429V7C0.359375 6.7619 0.442708 6.55952 0.609375 6.39286C0.776042 6.22619 0.978423 6.14286 1.21652 6.14286H1.50223V4.42857C1.50223 3.33333 1.89509 2.39286 2.6808 1.60714C3.46652 0.821428 4.40699 0.428571 5.50223 0.428571C6.59747 0.428571 7.53795 0.821428 8.32366 1.60714C9.10938 2.39286 9.50223 3.33333 9.50223 4.42857V6.14286H9.78795C10.026 6.14286 10.2284 6.22619 10.3951 6.39286C10.5618 6.55952 10.6451 6.7619 10.6451 7Z"
-                            fill="#495057"
+
+            <!-- ✅ 선택 삭제 버튼 -->
+            <button class="delete-selected-button" :disabled="selectedItemCount === 0" @click="removeSelectedItems">선택 삭제</button>
+        </div>
+
+        <!-- 구분선 -->
+        <hr class="divider" />
+
+        <div class="row gx-5">
+            <!-- 상품 목록 -->
+            <div class="col-12 col-lg-7">
+                <template v-if="cartProducts.length > 0">
+                    <template v-for="(product, index) in cartProducts" :key="index">
+                        <hr v-if="index !== 0" class="horizontal dark my-3" />
+                        <ProductCartItem
+                            :thumbSrc="product.thumbSrc"
+                            :thumbAlt="product.thumbAlt"
+                            :title="product.title"
+                            :color="product.color"
+                            :size="product.size"
+                            :price="product.price"
+                            :stock="product.stock"
+                            :quantity="product.quantity"
+                            :discount="product.discount"
+                            :selected="product.selected"
+                            @update-selected="updateSelected(index, $event)"
+                            @update-quantity="updateQuantity(index, $event)"
+                            @remove-item="removeItem(index)"
                         />
-                    </svg>
-                    Secured Payment with:
-                </p>
-                <div class="d-flex justify-content-center">
-                    <svg v-for="index in 3" :key="index" class="me-2" width="31" height="21" viewBox="0 0 31 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 1 L30 1 L30 20 L1 20 Z" stroke="#495057" fill="none" />
-                    </svg>
-                </div> -->
+                    </template>
+                </template>
+                <div v-else class="text-center text-muted py-4">
+                    <p>현재 장바구니에 담긴 상품이 없습니다.</p>
+                </div>
+            </div>
+
+            <!-- 주문 요약 -->
+            <div class="col-12 col-lg-5 mt-4 mt-lg-0">
+                <OrderSummary
+                    :totalPrice="subtotal"
+                    :totalDiscount="totalDiscount"
+                    :shippingCost="shipping"
+                    :itemCount="selectedItemCount"
+                    :cartProducts="cartProducts"
+                    @order-selected="orderSelected"
+                    @order-all="orderAll"
+                />
             </div>
         </div>
-        <div v-else>장바구니가 비어 있습니다.</div>
     </div>
 </template>
 
@@ -53,37 +68,170 @@ import { ref, computed } from 'vue';
 import ProductCartItem from '../components/cart/ProductCartItem.vue';
 import OrderSummary from '../components/cart/OrderSummary.vue';
 
-// Mock 데이터 생성
-const mockProducts = ref([
+// ✅ 장바구니 데이터 (샘플 데이터)
+const cartProducts = ref([
     {
-        thumb_src: new URL('../assets/images/product1.jpg', import.meta.url).href,
-        thumb_alt: 'Product 1',
+        thumbSrc: new URL('../assets/images/product1.jpg', import.meta.url).href,
+        thumbAlt: 'Product 1',
         title: 'Classic T-Shirt',
         color: 'Black',
         size: 'M',
-        price: 25,
-        stock: true,
+        price: 25000,
+        discount: 5000,
+        stock: 3,
+        quantity: 1,
+        selected: false,
     },
     {
-        thumb_src: new URL('../assets/images/product2.jpg', import.meta.url).href,
-        thumb_alt: 'Product 2',
+        thumbSrc: new URL('../assets/images/product2.jpg', import.meta.url).href,
+        thumbAlt: 'Product 2',
         title: 'Denim Jacket',
         color: 'Blue',
         size: 'L',
-        price: 75,
-        stock: true,
-    },
-    {
-        thumb_src: new URL('../assets/images/product3.jpg', import.meta.url).href,
-        thumb_alt: 'Product 3',
-        title: 'Sneakers',
-        color: 'White',
-        size: '42',
-        price: 120,
-        stock: false,
+        price: 75000,
+        discount: 10000,
+        stock: 5,
+        quantity: 1,
+        selected: false,
     },
 ]);
 
-// 총합 계산
-const subtotal = computed(() => mockProducts.value.reduce((acc, product) => acc + (product.price || 0), 0));
+// ✅ 전체 선택 상태
+const isAllSelected = computed({
+    get: () => cartProducts.value.length > 0 && cartProducts.value.every((product) => product.selected),
+    set: (value) => {
+        cartProducts.value.forEach((product) => (product.selected = value));
+    },
+});
+
+// ✅ 선택된 상품 개수
+const selectedItemCount = computed(() => cartProducts.value.filter((product) => product.selected).length);
+
+// ✅ 총 상품 금액 계산 (선택된 상품만)
+const subtotal = computed(() => cartProducts.value.filter((product) => product.selected).reduce((acc, product) => acc + product.price * product.quantity, 0));
+
+// ✅ 총 할인 금액 계산 (선택된 상품만)
+const totalDiscount = computed(() => cartProducts.value.filter((product) => product.selected).reduce((acc, product) => acc + product.discount * product.quantity, 0));
+
+// ✅ 배송비 계산 (10만 원 이상 무료 배송)
+const shipping = computed(() => (subtotal.value >= 100000 ? 0 : 3000));
+
+// ✅ 선택된 상품 삭제
+function removeSelectedItems() {
+    cartProducts.value = cartProducts.value.filter((product) => !product.selected);
+}
+
+// ✅ 개별 상품 선택 상태 업데이트
+function updateSelected(index, isSelected) {
+    cartProducts.value[index].selected = isSelected;
+}
+
+// ✅ 수량 업데이트 (최소값 1 보장)
+function updateQuantity(index, newQuantity) {
+    cartProducts.value[index].quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
+}
+
+// ✅ 개별 상품 제거
+function removeItem(index) {
+    cartProducts.value.splice(index, 1);
+}
+
+// ✅ 선택 주문 (선택된 상품만 주문)
+function orderSelected() {
+    const selectedItems = cartProducts.value.filter((product) => product.selected);
+    if (selectedItems.length === 0) {
+        alert('선택된 상품이 없습니다.');
+    } else {
+        alert('선택된 상품 주문: ' + JSON.stringify(selectedItems));
+    }
+}
+
+// ✅ 전체 주문 (모든 상품 주문)
+function orderAll() {
+    if (cartProducts.value.length === 0) {
+        alert('장바구니가 비어 있습니다.');
+    } else {
+        alert('전체 상품 주문: ' + JSON.stringify(cartProducts.value));
+    }
+}
 </script>
+
+<style scoped>
+/* 전체 선택 체크박스 스타일 */
+.select-all-container {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+}
+
+/* 전체 선택 & 선택 삭제 버튼 스타일 */
+.d-flex.align-items-center {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 선택 삭제 버튼 */
+.delete-selected-button {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 4px 10px; /* 버튼 크기 축소 */
+    font-size: 12px; /* 글자 크기 줄이기 */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    /* 위치 조정 */
+    position: relative;
+    top: 5px; /* 버튼을 아래로 살짝 이동 */
+}
+
+/* 선택 삭제 버튼 - 비활성화 */
+.delete-selected-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 선택 삭제 버튼 - 호버 */
+.delete-selected-button:hover:not(:disabled) {
+    background-color: black;
+}
+
+/* 구분선 */
+.divider {
+    border: none;
+    height: 1px;
+    background-color: #ccc; /* 선 색상 */
+    margin-bottom: 20px;
+}
+
+/* 상품 이미지 크기 축소 */
+.product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+/* 상품 리스트 간격 조정 */
+.product-list-item {
+    font-size: 0.9rem;
+}
+
+/* 주문 요약 크기 축소 */
+.order-summary {
+    font-size: 0.8rem;
+    padding: 0.9rem;
+}
+
+.order-summary p {
+    margin-bottom: 0.5rem;
+}
+
+/* 주문 버튼 스타일 */
+.order-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+</style>
