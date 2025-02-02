@@ -8,7 +8,7 @@ import App from './App.vue';
 import router from './router';
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import '/Users/jmj/NineScent-Frontend/src/config/icons.js';
+// import '/Users/jmj/NineScent-Frontend/src/config/icons.js';
 
 const app = createApp(App);
 
