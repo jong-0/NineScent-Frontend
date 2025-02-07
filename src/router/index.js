@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '@/pages/Home.vue';
 import Checkout from '@/pages/Checkout.vue';
+import OrderDetail from '@/pages/OrderDetail.vue';
+import Test from '@/pages/Test.vue';
 import Address from '@/pages/Address.vue';
 import AddAddress from '@/pages/AddAddress.vue';
 import UpdateAddress from '@/pages/UpdateAddress.vue';
@@ -29,9 +31,19 @@ const routes = [
     component: Home,
   },
   {
+    path: '/test',
+    name: 'Test',
+    component: Test,
+  },
+  {
     path: '/checkout',
     name: 'Checkout',
     component: Checkout,
+  },
+  {
+    path: '/orderDetail/:orderId',
+    name: 'OrderDetail',
+    component: OrderDetail,
   },
   {
     path: '/address/:userNo',
