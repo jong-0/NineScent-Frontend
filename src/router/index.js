@@ -6,6 +6,10 @@ import AddAddress from '@/pages/AddAddress.vue';
 import UpdateAddress from '@/pages/UpdateAddress.vue';
 import CSCenter from '@/pages/CSCenter.vue';
 import AddFaq from '@/pages/AddFaq.vue';
+import ItemList from '@/pages/ItemList.vue';
+import Item from '@/pages/Item.vue';
+import AddQna from '@/pages/AddQna.vue';
+import AddReview from '@/pages/AddReview.vue';
 // import Login from '@/pages/Login.vue';
 // import Signup from '@/pages/Signup.vue';
 // import Category from '@/pages/Category.vue';
@@ -59,9 +63,39 @@ const routes = [
     component: AddFaq,
   },
   {
-    path: '/faq/update/:faqId',
+    path: '/faq/add/:faqId',
     name: 'UpdateFaq',
     component: AddFaq,
+  },
+  {
+    path: '/itemlist',
+    name: 'ItemList',
+    component: ItemList,
+  },
+  {
+    path: '/item/:itemId',
+    name: 'Item',
+    component: Item,
+  },
+  {
+    path: '/qna/:itemId/add',
+    name: 'AddQna',
+    component: AddQna,
+  },
+  {
+    path: '/qna/:itemId/add/:questionId',
+    name: 'UpdateQna',
+    component: AddQna,
+  },
+  {
+    path: '/review/:itemId/add/',
+    name: 'AddReview',
+    component: AddReview,
+  },
+  {
+    path: '/review/:itemId/add/:reviewId',
+    name: 'UpdateReview',
+    component: AddReview,
   },
 ];
 
