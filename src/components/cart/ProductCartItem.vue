@@ -14,8 +14,8 @@
         <div class="w-100 w-md-50 ps-md-4">
             <h6 class="text-lg mb-1">{{ title }}</h6>
             <div class="d-flex">
-                <p class="pe-3 mb-0">{{ color }}</p>
-                <p class="border-start ps-3 mb-0">{{ size }}</p>
+                <p class="pe-3 mb-0">{{ size }}</p>
+                <!-- <p class="border-start ps-3 mb-0">{{ size }}</p> -->
             </div>
             <!-- 재고 상태 표시 -->
             <div class="stock-message-container">
@@ -28,8 +28,12 @@
         </div>
 
         <!-- 수량 입력 영역 -->
-        <div class="quantity-input me-3">
+        <!-- <div class="quantity-input me-3">
             <input type="number" :value="quantity" @input="$emit('update-quantity', $event.target.value)" min="1" class="form-control" placeholder="1" aria-label="amount" />
+        </div> -->
+        <!-- 수량 입력 영역 -->
+        <div class="quantity-input me-3">
+            <input type="number" :value="quantity" @input="updateQuantity($event.target.value)" min="1" class="form-control" placeholder="1" aria-label="amount" />
         </div>
 
         <!-- 총 금액 영역 -->
@@ -44,13 +48,17 @@
 
 <script setup>
 import { computed } from 'vue';
+import { cartApi } from '@/api/cartApi';
+import { useAuthStore } from '@/stores/authStore';
 
-// ✅ Props 선언
+const authStore = useAuthStore();
+
+// Props 선언
 const props = defineProps({
+    itemId: { type: Number, required: true }, // 상품 ID
     thumbSrc: { type: String, required: true },
     thumbAlt: { type: String, required: true },
     title: { type: String, required: true },
-    color: { type: String, required: true },
     size: { type: String, required: true },
     price: { type: Number, required: true },
     stock: { type: Number, required: true },
@@ -59,12 +67,15 @@ const props = defineProps({
     selected: { type: Boolean, default: false }, // 선택 여부
 });
 
-// ✅ 계산된 속성
+// Emits 선언
+const emit = defineEmits(['update-quantity', 'remove-item']);
+
+// 계산된 속성
 const formattedPrice = computed(() => props.price.toLocaleString());
 const totalPrice = computed(() => (props.price * props.quantity).toLocaleString());
 const formattedDiscount = computed(() => (props.discount * props.quantity).toLocaleString());
 
-// ✅ 재고 메시지 설정
+// 재고 메시지 설정
 const stockMessage = computed(() => {
     if (props.stock === 0) {
         return '재고 없음';
@@ -74,10 +85,28 @@ const stockMessage = computed(() => {
     return '';
 });
 
-// ✅ 재고 아이콘 설정
+// 재고 아이콘 설정
 const stockIcon = computed(() => {
     return props.stock === 0 ? 'fas fa-minus-circle text-danger' : 'fas fa-check text-success';
 });
+
+// ✅ 수량 변경
+const updateQuantity = (event) => {
+    const newQuantity = parseInt(event.target.value, 10) || 1;
+    emit('update-quantity', newQuantity);
+};
+
+// ✅ 개별 상품 제거 (API 요청)
+const removeItem = async () => {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+        await cartApi.removeItem(authStore.userId, props.itemId);
+        emit('remove-item'); // 상위 컴포넌트에 삭제 이벤트 전달
+    } catch (error) {
+        alert('상품 삭제에 실패했습니다.');
+    }
+};
 </script>
 
 <style scoped>

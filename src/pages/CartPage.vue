@@ -5,14 +5,14 @@
             {{ cartProducts.length > 0 ? '' : '장바구니가 비어 있습니다.' }}
         </h6>
 
-        <!-- ✅ 전체 선택 & 선택 삭제 버튼 -->
+        <!-- 전체 선택 & 선택 삭제 버튼 -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="d-flex align-items-center">
                 <input type="checkbox" v-model="isAllSelected" @change="toggleAllSelection" aria-label="select-all-items" class="me-2" />
                 <label for="select-all-items" class="mb-0">전체 선택</label>
             </div>
 
-            <!-- ✅ 선택 삭제 버튼 -->
+            <!--  선택 삭제 버튼 -->
             <button class="delete-selected-button" :disabled="selectedItemCount === 0" @click="removeSelectedItems">선택 삭제</button>
         </div>
 
@@ -21,11 +21,12 @@
 
         <div class="row gx-5">
             <!-- 상품 목록 -->
-            <div class="col-12 col-lg-7">
+            <div class="col-12 col-lg-8">
                 <template v-if="cartProducts.length > 0">
                     <template v-for="(product, index) in cartProducts" :key="index">
                         <hr v-if="index !== 0" class="horizontal dark my-3" />
                         <ProductCartItem
+                            :itemId="product.itemId"
                             :thumbSrc="product.thumbSrc"
                             :thumbAlt="product.thumbAlt"
                             :title="product.title"
@@ -37,8 +38,8 @@
                             :discount="product.discount"
                             :selected="product.selected"
                             @update-selected="updateSelected(index, $event)"
-                            @update-quantity="updateQuantity(index, $event)"
-                            @remove-item="removeItem(index)"
+                            @update-quantity="updateQuantity(index, product.itemId, $event)"
+                            @remove-item="removeItem(product.itemId)"
                         />
                     </template>
                 </template>
@@ -48,7 +49,7 @@
             </div>
 
             <!-- 주문 요약 -->
-            <div class="col-12 col-lg-5 mt-4 mt-lg-0">
+            <div class="col-12 col-lg-4 mt-4 mt-lg-0">
                 <OrderSummary
                     :totalPrice="subtotal"
                     :totalDiscount="totalDiscount"
@@ -64,9 +65,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { cartApi } from '@/api/cartApi';
+import { useAuthStore } from '@/stores/authStore';
 import ProductCartItem from '../components/cart/ProductCartItem.vue';
 import OrderSummary from '../components/cart/OrderSummary.vue';
+
+const authStore = useAuthStore();
 
 // ✅ 장바구니 데이터 (샘플 데이터)
 const cartProducts = ref([
@@ -96,6 +101,35 @@ const cartProducts = ref([
     },
 ]);
 
+// ✅ 장바구니 데이터 (백엔드 연동)
+// const cartProducts = ref([]);
+
+// ✅ 장바구니 불러오기
+const loadCart = async () => {
+    try {
+        const response = await cartApi.getCart(authStore.userNo);
+        cartProducts.value = response.data.items.map((item) => ({
+            itemId: item.itemId,
+            thumbSrc: item.imageUrl,
+            thumbAlt: item.itemName,
+            title: item.itemName,
+            size: item.size,
+            price: item.price,
+            stock: item.stock,
+            quantity: item.quantity,
+            discount: item.discount,
+            selected: true, // 기본적으로 선택되지 않음
+        }));
+    } catch (error) {
+        console.error('장바구니 데이터를 불러오는 중 오류 발생:', error);
+    }
+};
+
+// ✅ 페이지 로딩 시 장바구니 불러오기
+onMounted(() => {
+    loadCart();
+});
+
 // ✅ 전체 선택 상태
 const isAllSelected = computed({
     get: () => cartProducts.value.length > 0 && cartProducts.value.every((product) => product.selected),
@@ -117,24 +151,59 @@ const totalDiscount = computed(() => cartProducts.value.filter((product) => prod
 const shipping = computed(() => (subtotal.value >= 100000 ? 0 : 3000));
 
 // ✅ 선택된 상품 삭제
-function removeSelectedItems() {
-    cartProducts.value = cartProducts.value.filter((product) => !product.selected);
-}
+// function removeSelectedItems() {
+//     cartProducts.value = cartProducts.value.filter((product) => !product.selected);
+// }
 
 // ✅ 개별 상품 선택 상태 업데이트
 function updateSelected(index, isSelected) {
     cartProducts.value[index].selected = isSelected;
 }
 
-// ✅ 수량 업데이트 (최소값 1 보장)
-function updateQuantity(index, newQuantity) {
+// ✅ 수량 업데이트 (프론트 + 백엔드 동기화)
+const updateQuantity = async (index, itemId, newQuantity) => {
+    // 1. 프론트 단에서 즉시 반영
     cartProducts.value[index].quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
-}
 
-// ✅ 개별 상품 제거
-function removeItem(index) {
-    cartProducts.value.splice(index, 1);
-}
+    // 2. 백엔드 업데이트 요청
+    try {
+        await cartApi.updateItem(authStore.userId, itemId, cartProducts.value[index].quantity);
+    } catch (error) {
+        console.error('수량 변경 실패:', error);
+    }
+};
+
+// ✅ 개별 상품 제거 (백엔드 연동)
+const removeItem = async (itemId) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+        await cartApi.removeItem(authStore.userId, itemId);
+        loadCart(); // 장바구니 다시 불러오기
+    } catch (error) {
+        console.error('상품 삭제 실패:', error);
+    }
+};
+
+// ✅ 선택된 상품 삭제
+const removeSelectedItems = async () => {
+    const selectedItems = cartProducts.value.filter((product) => product.selected);
+    if (selectedItems.length === 0) {
+        alert('삭제할 상품을 선택하세요.');
+        return;
+    }
+
+    if (!confirm('선택한 상품을 삭제하시겠습니까?')) return;
+
+    try {
+        for (const product of selectedItems) {
+            await cartApi.removeItem(authStore.userId, product.itemId);
+        }
+        loadCart();
+    } catch (error) {
+        console.error('선택한 상품 삭제 실패:', error);
+    }
+};
 
 // ✅ 선택 주문 (선택된 상품만 주문)
 function orderSelected() {
@@ -176,15 +245,15 @@ function orderAll() {
     background-color: black;
     color: white;
     border: none;
-    padding: 4px 10px; /* 버튼 크기 축소 */
-    font-size: 12px; /* 글자 크기 줄이기 */
+    padding: 4px 10px;
+    font-size: 12px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
 
     /* 위치 조정 */
     position: relative;
-    top: 5px; /* 버튼을 아래로 살짝 이동 */
+    top: 0px;
 }
 
 /* 선택 삭제 버튼 - 비활성화 */
@@ -233,5 +302,9 @@ function orderAll() {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
+}
+
+.col-12.col-lg-4 {
+    padding-left: 40px;
 }
 </style>
