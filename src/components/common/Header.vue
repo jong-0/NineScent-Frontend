@@ -1,6 +1,21 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { onMounted } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'vue-router';
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+// 마이페이지 이동 로직
+const goToMyPage = () => {
+    if (authStore.isAuthenticated) {
+        router.push(`/mypage/${authStore.userId}`);
+    } else {
+        alert('로그인이 필요합니다.');
+        router.push('/login');
+    }
+};
 
 onMounted(() => {
     document.querySelector('.logo').addEventListener('mouseenter', () => {
@@ -47,7 +62,7 @@ onMounted(() => {
         <nav class="navigation-icon">
             <ul>
                 <li>
-                    <a href="/mypage/:id">
+                    <a href="javascript:void(0);" @click="goToMyPage">
                         <font-awesome-icon :icon="['fas', 'user']" />
                     </a>
                 </li>

@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 
 import App from './App.vue';
+import './plugins/axios';
 import router from './router';
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
