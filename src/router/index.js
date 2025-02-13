@@ -1,19 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
+import ItemDetail from '@/pages/Item/ItemDetail.vue';
 import Home from '@/pages/Home.vue';
 import Checkout from '@/pages/Checkout.vue';
-import OrderDetail from '@/pages/OrderDetail.vue';
-import Test from '@/pages/Test.vue';
 import Address from '@/pages/Address.vue';
 import AddAddress from '@/pages/AddAddress.vue';
 import UpdateAddress from '@/pages/UpdateAddress.vue';
 import CSCenter from '@/pages/CSCenter.vue';
 import AddFaq from '@/pages/AddFaq.vue';
-import ItemList from '@/pages/ItemList.vue';
-import Item from '@/pages/Item.vue';
-import AddQna from '@/pages/AddQna.vue';
-import AddReview from '@/pages/AddReview.vue';
 import Login from '@/pages/Login.vue';
 import Signup from '@/pages/Signup.vue';
 import MyPage from '@/pages/MyPage.vue';
@@ -26,7 +21,11 @@ const routes = [
   // { path: '/category/:id', component: Category },
   // { path: '/product/:id', component: ProductDetail },
   // { path: '/order-complete', component: OrderComplete },
-
+  {
+    path: '/items/:id',
+    name: 'ItemDetail',
+    component: ItemDetail,
+  },
   {
     path: '/',
     name: 'home',
@@ -51,19 +50,9 @@ const routes = [
     component: Cart,
   },
   {
-    path: '/test',
-    name: 'Test',
-    component: Test,
-  },
-  {
     path: '/checkout',
     name: 'Checkout',
     component: Checkout,
-  },
-  {
-    path: '/orderDetail/:orderId',
-    name: 'OrderDetail',
-    component: OrderDetail,
   },
   {
     path: '/address/:userNo',
@@ -91,39 +80,9 @@ const routes = [
     component: AddFaq,
   },
   {
-    path: '/faq/add/:faqId',
+    path: '/faq/update/:faqId',
     name: 'UpdateFaq',
     component: AddFaq,
-  },
-  {
-    path: '/itemlist',
-    name: 'ItemList',
-    component: ItemList,
-  },
-  {
-    path: '/item/:itemId',
-    name: 'Item',
-    component: Item,
-  },
-  {
-    path: '/qna/:itemId/add',
-    name: 'AddQna',
-    component: AddQna,
-  },
-  {
-    path: '/qna/:itemId/add/:questionId',
-    name: 'UpdateQna',
-    component: AddQna,
-  },
-  {
-    path: '/review/:itemId/add/',
-    name: 'AddReview',
-    component: AddReview,
-  },
-  {
-    path: '/review/:itemId/add/:reviewId',
-    name: 'UpdateReview',
-    component: AddReview,
   },
 
   {
@@ -161,7 +120,9 @@ router.beforeEach((to, from, next) => {
   }
 
   // 인증이 필요한 페이지 (예: MyPage)
-  const requiresAuth = to.matched.some((record) => record.path.startsWith('/mypage'));
+  const requiresAuth = to.matched.some((record) =>
+    record.path.startsWith('/mypage')
+  );
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // 인증이 필요한 페이지에 접근했지만 로그인되지 않은 경우
