@@ -1,6 +1,6 @@
+<!-- Home.vue -->
 <template>
   <div class="home">
-    <Header />
     <main class="main">
       <section class="hero">
         <h1>Discover the Perfect Fragrance</h1>
@@ -23,14 +23,11 @@
         </div>
       </section>
     </main>
-    <Footer />
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router';
-import Header from '@/components/Header.vue';
-import Footer from '@/components/Footer.vue';
 
 const router = useRouter();
 
@@ -68,18 +65,22 @@ const featuredProducts = [
   font-family: Arial, sans-serif;
   color: #333;
 }
+
 .hero {
   text-align: center;
   padding: 50px 20px;
   background-color: #ececec;
 }
+
 .hero h1 {
   font-size: 36px;
 }
+
 .hero p {
   font-size: 18px;
   margin: 10px 0;
 }
+
 .shop-now {
   padding: 10px 20px;
   background-color: #333;
@@ -88,9 +89,11 @@ const featuredProducts = [
   cursor: pointer;
   font-size: 16px;
 }
+
 .featured-products {
   padding: 20px;
 }
+
 .product-list {
   display: flex;
   gap: 20px;
@@ -111,5 +114,9 @@ const featuredProducts = [
 
 .product-item:hover {
   transform: scale(1.05);
+}
+
+.product-item h3 {
+  font-size: 16px;
 }
 </style>

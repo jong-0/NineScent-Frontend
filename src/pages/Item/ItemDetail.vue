@@ -466,4 +466,35 @@ export default {
   color: #999;
   font-size: 14px;
 }
+
+.detail-info img {
+  max-width: 800px;
+  width: 100%;
+  height: auto;
+  margin: 20px auto;
+  display: block;
+}
+
+.product-info p {
+  line-height: 1.6;
+  color: #666;
+  margin: 20px 0;
+}
+
+.main-image {
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.product-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  padding: 40px 20px;
+}
 </style>
