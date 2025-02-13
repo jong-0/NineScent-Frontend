@@ -42,6 +42,10 @@ const featuredProducts = [
     price: '32,000원',
     image:
       'https://items-img-bucket.s3.ap-northeast-2.amazonaws.com/main/%E1%84%83%E1%85%B5%E1%86%B8+%E1%84%83%E1%85%A1%E1%84%8B%E1%85%AE%E1%86%AB+%E1%84%92%E1%85%A2%E1%86%AB%E1%84%83%E1%85%B3+%E1%84%87%E1%85%A1%E1%86%B7+50ml.jpg',
+    name: '딥 다운 핸드 밤 50ml',
+    price: '32,000원',
+    image:
+      'https://items-img-bucket.s3.ap-northeast-2.amazonaws.com/main/%E1%84%83%E1%85%B5%E1%86%B8+%E1%84%83%E1%85%A1%E1%84%8B%E1%85%AE%E1%86%AB+%E1%84%92%E1%85%A2%E1%86%AB%E1%84%83%E1%85%B3+%E1%84%87%E1%85%A1%E1%86%B7+50ml.jpg',
   },
   {
     id: 2,
@@ -114,9 +118,5 @@ const featuredProducts = [
 
 .product-item:hover {
   transform: scale(1.05);
-}
-
-.product-item h3 {
-  font-size: 16px;
 }
 </style>
