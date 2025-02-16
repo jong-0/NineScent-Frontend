@@ -171,7 +171,6 @@ const debouncedUpdateQuantity = _.debounce(async (index, itemId, newQuantity) =>
 
 //  수량 업데이트 (프론트 + 백엔드 동기화)
 const updateQuantity = async (index, itemId, newQuantity) => {
-    // const quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
     console.log('🛠 수량 변경 감지:', newQuantity);
     // 변경 사항을 감지할 수 있도록 새로운 객체를 생성하여 대입
     cartProducts.value[index] = { ...cartProducts.value[index], quantity: newQuantity };
