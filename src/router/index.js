@@ -18,6 +18,7 @@ import MyPage from '@/pages/MyPage.vue';
 // import Category from '@/pages/Category.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
 import Cart from '@/pages/CartPage.vue';
+import OrderComplete from '@/pages/OrderComplete.vue';
 // import OrderComplete from '@/pages/OrderComplete.vue';
 
 const routes = [
@@ -64,6 +65,13 @@ const routes = [
         name: 'Checkout',
         component: Checkout,
     },
+
+    {
+        path: '/complete',
+        name: 'OrderComplete',
+        component: OrderComplete,
+    },
+
     {
         path: '/address/:userNo',
         name: 'Address',
