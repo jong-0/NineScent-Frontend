@@ -2,14 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
 import Home from '@/pages/Home.vue';
+import Login from '@/pages/member/Login.vue';
+import Signup from '@/pages/member/Signup.vue';
+import FindId from '@/pages/member/FindId.vue';
+import FindPw from '@/pages/member/FindPw.vue';
+
 import Checkout from '@/pages/Checkout.vue';
 import Address from '@/pages/Address.vue';
 import AddAddress from '@/pages/AddAddress.vue';
 import UpdateAddress from '@/pages/UpdateAddress.vue';
 import CSCenter from '@/pages/CSCenter.vue';
 import AddFaq from '@/pages/AddFaq.vue';
-import Login from '@/pages/Login.vue';
-import Signup from '@/pages/Signup.vue';
+
 import MyPage from '@/pages/MyPage.vue';
 // import Category from '@/pages/Category.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
@@ -39,6 +43,17 @@ const routes = [
         component: Signup,
     },
 
+    {
+        path: '/findId',
+        name: 'FindId',
+        component: FindId,
+    },
+
+    {
+        path: '/findPw',
+        name: 'FindPw',
+        component: FindPw,
+    },
     {
         path: '/cart',
         name: 'Cart',

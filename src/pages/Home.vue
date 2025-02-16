@@ -1,8 +1,8 @@
 <template>
     <div class="home">
-        <section class="hero">
-            <h1>Discover the Perfect Fragrance</h1>
-            <p>Your journey to elegance starts here.</p>
+        <section class="hero" :style="{ backgroundImage: `url(${mainImg1})` }">
+            <!-- <h2>Perfect Fragrance</h2> -->
+            <p>Your journey to elegance starts here with us.</p>
             <button class="shop-now">Shop Now</button>
         </section>
         <section class="featured-products">
@@ -19,6 +19,8 @@
 </template>
 
 <script setup>
+import mainImg1 from '@/assets/images/mainImg.jpeg';
+
 const featuredProducts = [
     {
         id: 1,
@@ -47,9 +49,13 @@ const featuredProducts = [
     color: #333;
 }
 .hero {
+    min-height: 750px;
     text-align: center;
-    padding: 50px 20px;
+    padding: 30px 20px;
     background-color: #ececec;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 .hero h1 {
     font-size: 36px;
@@ -60,11 +66,12 @@ const featuredProducts = [
 }
 .shop-now {
     padding: 10px 20px;
-    background-color: #333;
-    color: #fff;
+    background-color: #f7f6f0;
+    color: #333;
     border: none;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
+    margin-top: 10px;
 }
 .featured-products {
     padding: 20px;

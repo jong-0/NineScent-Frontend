@@ -23,11 +23,11 @@
                     <button type="submit" class="login-btn btn btn-dark w-100 mb-3">로그인</button>
                 </form>
                 <div class="link-container d-flex justify-content-between text-muted mt-3" style="margin-bottom: 60px">
-                    <a href="#" class="text-decoration-none">아이디 찾기</a>
+                    <a href="findId" class="text-decoration-none">아이디 찾기</a>
                     <span>|</span>
-                    <a href="#" class="text-decoration-none">비밀번호 찾기</a>
+                    <a href="findPw" class="text-decoration-none">비밀번호 찾기</a>
                     <span>|</span>
-                    <a href="#" class="text-decoration-none">회원 가입</a>
+                    <a href="signup" class="text-decoration-none">회원 가입</a>
                 </div>
             </div>
         </div>
