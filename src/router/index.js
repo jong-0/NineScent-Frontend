@@ -19,7 +19,6 @@ import MyPage from '@/pages/MyPage.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
 import Cart from '@/pages/CartPage.vue';
 import OrderComplete from '@/pages/OrderComplete.vue';
-// import OrderComplete from '@/pages/OrderComplete.vue';
 
 const routes = [
     // { path: '/category/:id', component: Category },
