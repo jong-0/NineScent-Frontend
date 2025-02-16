@@ -8,7 +8,8 @@ import AddAddress from '@/pages/AddAddress.vue';
 import UpdateAddress from '@/pages/UpdateAddress.vue';
 import CSCenter from '@/pages/CSCenter.vue';
 import AddFaq from '@/pages/AddFaq.vue';
-import ItemList from '@/pages/ItemList.vue';
+import Perfume from '@/pages/Perfume.vue';
+import Etc from '@/pages/Etc.vue';
 import Item from '@/pages/Item.vue';
 import AddQna from '@/pages/AddQna.vue';
 import AddReview from '@/pages/AddReview.vue';
@@ -84,9 +85,14 @@ const routes = [
     component: AddFaq,
   },
   {
-    path: '/itemlist',
-    name: 'ItemList',
-    component: ItemList,
+    path: '/perfume',
+    name: 'Perfume',
+    component: Perfume,
+  },
+  {
+    path: '/etc',
+    name: 'Etc',
+    component: Etc,
   },
   {
     path: '/item/:itemId',

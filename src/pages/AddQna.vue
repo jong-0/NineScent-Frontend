@@ -1,27 +1,52 @@
 <template>
   <div>
     <h1>Qna form</h1>
-    <div>
-      <h2>{{ itemData.itemName }}</h2>
-      <p>{{ itemData.itemSize }}</p>
-      <p>{{ itemData.discountRate }}</p>
-      <p>{{ itemData.discountedPrice }}</p>
-      <p>{{ itemData.mainPhoto }}</p>
+    <div class="item-container">
+      <div class="item-photo">
+        <p>{{ itemData.mainPhoto }}</p>
+      </div>
+      <div class="item-info">
+        <p>{{ itemData.itemName }} {{ itemData.itemSize }}ml</p>
+        <p>{{ priceText }}</p>
+      </div>
     </div>
-    <select v-model="qnaData.qnaCategory">
-      <option v-for="category in categories" :key="category" :value="category">
-        {{ category }}
-      </option>
-    </select>
+    <div class="category-container">
+      <div class="category-title">문의 유형</div>
+      <div>
+        <select class="category" v-model="qnaData.qnaCategory">
+          <option v-for="category in categories" :key="category" :value="category">
+            {{ category }}
+          </option>
+        </select>
+      </div>
+    </div>
     <br />
-    <input type="text" v-model="qnaData.content" placeholder="내용" /><br />
-    <input type="text" v-model="qnaData.attachment" placeholder="사진첨부" /><br />
-    <button @click="submitQna">등록</button>
+    <div class="title-container">
+      <div class="title-title">제목 (필수)</div>
+      <input
+        class="title"
+        type="text"
+        v-model="qnaData.content"
+        placeholder="제목을 입력해주세요"
+      /><br />
+    </div>
+    <textarea
+      class="content"
+      type="text"
+      v-model="qnaData.attachment"
+      placeholder="문의할 내용을 입력해주세요"
+    /><br />
+    <div class="img-container">
+      <input type="file" />
+    </div>
+    <div class="add-qna">
+      <button class="add-btn" @click="submitQna">등록</button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
 import itemApi from '@/api/itemApi';
@@ -34,7 +59,7 @@ const categories = ref(['배송', '재입고', '상품상세문의']);
 const qnaData = ref({
   itemId: 0,
   userNo: 0,
-  qnaCategory: '',
+  qnaCategory: '배송',
   content: '',
   attachment: '',
   isDone: false,
@@ -47,6 +72,16 @@ const itemData = ref({
   discountRate: 0,
   discountedPrice: 0,
   mainPhoto: '',
+});
+
+const formattedPrice = computed(() => {
+  return itemData.value.discountedPrice.toLocaleString();
+});
+
+const priceText = computed(() => {
+  return itemData.value.discountRate > 0
+    ? `${itemData.value.discountRate}% ${formattedPrice.value}원`
+    : `${formattedPrice.value}원`;
 });
 
 const itemId = route.params.itemId;
@@ -106,4 +141,82 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.item-container {
+  display: flex;
+  margin: 20px 0px;
+  border-top: 2px solid #000000;
+  border-bottom: 1px solid #000000;
+  padding: 15px;
+}
+
+.item-photo {
+  width: 100px;
+  height: 100px;
+  margin-right: 20px;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.category-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.title-title {
+  text-align: center;
+  width: 100px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.category-title {
+  text-align: center;
+  width: 100px;
+  margin-right: 20px;
+}
+
+.category {
+  padding: 8px;
+  /* margin-top: 10px; */
+  border-radius: 5px;
+}
+
+.title {
+  flex-grow: 1;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #000000;
+  border-radius: 5px;
+}
+
+.content {
+  width: 100%;
+  height: 200px;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.add-qna {
+  text-align: right;
+  cursor: pointer;
+}
+
+.add-btn {
+  border-radius: 5px;
+  padding: 4px 15px;
+  background: #ffffff;
+}
+
+.add-btn:hover {
+  background: #f0f0f0;
+}
+</style>

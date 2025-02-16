@@ -1,78 +1,86 @@
 <template>
-  <div>
-    <h1>Qna</h1>
+  <div v-if="!isLoading">
     <div>
-      <ul>
-        <div>
-          <li v-for="qna in qnas" :key="qna.qnaId" class="qna">
-            <div class="question-header" @click="toggleAnswer(qna.questionId)">
-              <div>
-                <p>userNo: {{ qna.userNo }}</p>
-                <p>category: {{ qna.qnaCategory }}</p>
-                <p>content: {{ qna.content }}</p>
-                <p>attachment: {{ qna.attachment }}</p>
-                <p>date: {{ formatDate(qna.createdDate) }}</p>
-                <p>
-                  isDone:
-                  <span>
-                    {{ qna.done ? '답변 완료' : '답변 대기중' }}
-                  </span>
-                </p>
+      <div class="qna-container">
+        <p class="no-content" v-if="qnas.length === 0">등록된 문의가 없습니다.</p>
+        <ul class="qna-list" v-else>
+          <div>
+            <li v-for="qna in qnas" :key="qna.qnaId" class="qna">
+              <div class="question-header" @click="toggleAnswer(qna.questionId)">
+                <div>
+                  <p>{{ qna.qnaCategory }}</p>
+                  <p>{{ qna.content }}</p>
+                  <p>{{ qna.attachment }}</p>
+                  <p>
+                    <span>
+                      {{ qna.done ? '답변완료 · ' : '답변대기중 · ' }}
+                    </span>
+                    <span> {{ qna.name }} · {{ formatDate(qna.createdDate) }} </span>
+                  </p>
+                </div>
+                <div v-if="isQnaOwner(qna)">
+                  <span class="update" @click="editQna(qna)"
+                    ><i class="fa-regular fa-pen-to-square"></i
+                  ></span>
+                  <span class="delete" @click.stop="deleteQna(qna.questionId)"
+                    ><i class="fa-solid fa-x"></i
+                  ></span>
+                </div>
+                <div>
+                  <button
+                    v-if="!qna.done && isAdmin"
+                    @click.stop="toggleAnswerForm(qna.questionId)"
+                  >
+                    답변하기
+                  </button>
+                  <i
+                    v-if="qna.done"
+                    :class="[
+                      'fa-solid',
+                      'fa-chevron-down',
+                      { rotated: openStates[qna.questionId] },
+                    ]"
+                  ></i>
+                </div>
               </div>
-              <div>
-                <span class="update" @click="editQna(qna)"
-                  ><i class="fa-regular fa-pen-to-square"></i
-                ></span>
-                <span class="delete" @click.stop="deleteQna(qna.questionId)"
-                  ><i class="fa-solid fa-x"></i
-                ></span>
-              </div>
-              <div>
-                <button v-if="!qna.done" @click.stop="toggleAnswerForm(qna.questionId)">
-                  답변하기
-                </button>
-                <i
-                  v-if="qna.done"
-                  :class="['fa-solid', 'fa-chevron-down', { rotated: openStates[qna.questionId] }]"
-                ></i>
-              </div>
-            </div>
 
-            <!-- 답변 작성 폼 -->
-            <div v-if="answerFormStates[qna.questionId]" class="answer-form">
-              <textarea
-                v-model="newAnswers[qna.questionId]"
-                placeholder="답변을 입력하세요..."
-              ></textarea>
-              <div class="button-group">
-                <button @click="submitAnswer(qna.questionId)" class="submit-btn">제출</button>
-                <button @click="cancelAnswer(qna.questionId)" class="cancel-btn">취소</button>
+              <!-- 답변 작성 폼 -->
+              <div v-if="answerFormStates[qna.questionId]" class="answer-form">
+                <textarea
+                  v-model="newAnswers[qna.questionId]"
+                  placeholder="답변을 입력하세요..."
+                ></textarea>
+                <div class="button-group">
+                  <button @click="submitAnswer(qna.questionId)" class="submit-btn">제출</button>
+                  <button @click="cancelAnswer(qna.questionId)" class="cancel-btn">취소</button>
+                </div>
               </div>
-            </div>
 
-            <!-- 기존 답변 표시 -->
-            <div v-if="qna.done && openStates[qna.questionId]" class="answer-section">
-              <div>
-                <p>답변: {{ getAnswerContent(qna.questionId) }}</p>
-                <p>답변 날짜: {{ formatDate(getAnswerDate(qna.questionId)) }}</p>
+              <!-- 기존 답변 표시 -->
+              <div v-if="qna.done && openStates[qna.questionId]" class="answer-section">
+                <div>
+                  <p>답변: {{ getAnswerContent(qna.questionId) }}</p>
+                  <p>답변 날짜: {{ formatDate(getAnswerDate(qna.questionId)) }}</p>
+                </div>
+                <div>
+                  <button @click="deleteAnswer(qna.questionId)">삭제</button>
+                </div>
               </div>
-              <div>
-                <button @click="deleteAnswer(qna.questionId)">삭제</button>
-              </div>
-            </div>
-          </li>
-        </div>
-      </ul>
+            </li>
+          </div>
+        </ul>
+      </div>
     </div>
-  </div>
-  <div>
-    <button @click="addQna(itemId)">글쓰기</button>
+    <div class="add-qna">
+      <button class="add-btn" @click="addQna(itemId)">글쓰기</button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
 
 const route = useRoute();
@@ -82,12 +90,23 @@ const answers = ref([]);
 const openStates = ref({});
 const newAnswers = ref({});
 const answerFormStates = ref({}); // 답변 폼의 표시 여부를 관리
+const isLoading = ref(true);
+const authStore = useAuthStore();
 
 const qnaId = route.params.qnaId;
 const itemId = route.params.itemId;
 
+const isQnaOwner = (qna) => {
+  return qna.userNo === authStore.user?.userNo;
+};
+
+const isAdmin = computed(() => {
+  return authStore.user?.role === 'admin';
+});
+
 const fetchQnaData = async () => {
   if (!itemId) return;
+  isLoading.value = true;
   try {
     const response = await faqnaReviewApi.getQnaByItemId(itemId);
     qnas.value = response;
@@ -101,6 +120,8 @@ const fetchQnaData = async () => {
     }
   } catch (error) {
     console.error('Error fetching qna data', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -156,7 +177,12 @@ const cancelAnswer = (questionId) => {
 
 const formatDate = (date) => {
   if (!date || date.length < 6) return 'N/A';
-  return date.slice(0, 3).join('-');
+
+  const year = String(date[0]).slice(2);
+  const month = String(date[1]).padStart(2, '0');
+  const day = String(date[2]).padStart(2, '0');
+
+  return `${year}.${month}.${day}`;
 };
 
 const addQna = (itemId) => {
@@ -196,15 +222,31 @@ const deleteAnswer = async (questionId) => {
 
 onMounted(() => {
   fetchQnaData();
+  authStore.loadStoredToken();
 });
 </script>
 
 <style scoped>
+.no-content {
+  text-align: center;
+  margin: 20px 0px;
+}
+
+.qna-container {
+  margin: 20px 0px;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.qna-list {
+  margin: 0;
+  padding: 0;
+}
+
 .qna {
   list-style: none;
-  border: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   padding: 10px;
-  margin: 10px 0;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
@@ -276,5 +318,16 @@ onMounted(() => {
 
 .fa-chevron-down.rotated {
   transform: rotate(180deg);
+}
+
+.add-qna {
+  text-align: right;
+  margin: 20px 0px;
+}
+
+.add-btn {
+  padding: 5px 15px;
+  border-radius: 5px;
+  background-color: #ffffff;
 }
 </style>
