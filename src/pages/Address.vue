@@ -35,7 +35,6 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import addressApi from '@/api/addressApi';
-import checkoutApi from '@/api/checkoutApi';
 
 // const route = useRoute();
 const router = useRouter();
@@ -86,26 +85,19 @@ const deleteAddress = async (addrNo) => {
 
 // 선택한 주소 업데이트
 const selectAddress = async (addrNo) => {
-  if (addrNo == null) {
+  if (!addrNo) {
     const defaultAddress = addresses.value.find(
       (address) => address.isDefault === true
     );
     if (defaultAddress) {
-      addrNo = defaultAddress.addrNo; // 기본 배송지의 addrNo 할당
+      addrNo = defaultAddress.addrNo;
     } else {
       console.error('기본 배송지를 찾을 수 없습니다.');
+      return;
     }
   }
   try {
-    const updatedItems =
-      await checkoutApi.updateOrderAddress(userNo, addrNo);
-    console.log('변경된 주문 상품:', updatedItems);
-    // orderItems 데이터를 localStorage에 저장
-    localStorage.setItem(
-      'orderItems',
-      JSON.stringify(updatedItems)
-    );
-
+    sessionStorage.setItem('selectedAddress', addrNo);
     router.replace({ name: 'Checkout' });
   } catch (error) {
     console.error('Error updating order address:', error);

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
+import ItemDetail from '@/pages/Item/ItemDetail.vue';
 import Home from '@/pages/Home.vue';
 import Checkout from '@/pages/Checkout.vue';
 import Address from '@/pages/Address.vue';
@@ -25,7 +26,11 @@ const routes = [
   // { path: '/category/:id', component: Category },
   // { path: '/product/:id', component: ProductDetail },
   // { path: '/order-complete', component: OrderComplete },
-
+  {
+    path: '/items/:id',
+    name: 'ItemDetail',
+    component: ItemDetail,
+  },
   {
     path: '/',
     name: 'home',
@@ -80,7 +85,7 @@ const routes = [
     component: AddFaq,
   },
   {
-    path: '/faq/add/:faqId',
+    path: '/faq/update/:faqId',
     name: 'UpdateFaq',
     component: AddFaq,
   },
