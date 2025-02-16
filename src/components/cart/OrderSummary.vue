@@ -35,34 +35,34 @@
 <script setup>
 import { computed, watchEffect } from 'vue';
 
-// ✅ Props로 전달받는 데이터
+//   Props로 전달받는 데이터
 const props = defineProps({
     cartProducts: { type: Array, required: true }, // 장바구니 상품 목록
     shippingCost: { type: Number, default: 0 }, // 배송비
 });
 
-// ✅ 선택된 상품만 필터링
+//   선택된 상품만 필터링
 const selectedProducts = computed(() => props.cartProducts.filter((product) => product.selected));
 
-// ✅ 선택된 상품 개수
+//   선택된 상품 개수
 const selectedItemCount = computed(() => selectedProducts.value.length);
 
-// ✅ 선택된 상품만 반영한 총 상품 금액 (subtotal)
+//   선택된 상품만 반영한 총 상품 금액 (subtotal)
 const subtotal = computed(() => selectedProducts.value.reduce((acc, product) => acc + product.price * product.quantity, 0));
 
-// ✅ 선택된 상품만 반영한 총 할인 금액 (totalDiscount)
+//   선택된 상품만 반영한 총 할인 금액 (totalDiscount)
 const totalDiscount = computed(() => selectedProducts.value.reduce((acc, product) => acc + product.discount * product.quantity, 0));
 
-// ✅ 선택된 상품만 반영한 최종 결제 금액
+//   선택된 상품만 반영한 최종 결제 금액
 const finalTotal = computed(() => subtotal.value - totalDiscount.value + props.shippingCost);
 
-// ✅ 통화 형식 변환
+//   통화 형식 변환
 const formattedTotalPrice = computed(() => subtotal.value.toLocaleString());
 const formattedTotalDiscount = computed(() => totalDiscount.value.toLocaleString());
 const formattedShipping = computed(() => props.shippingCost.toLocaleString());
 const formattedFinalTotal = computed(() => finalTotal.value.toLocaleString());
 
-// ✅ 변경 사항 감지 및 디버깅 로그 출력
+//   변경 사항 감지 및 디버깅 로그 출력
 watchEffect(() => {
     console.log('🛒 선택된 상품만 반영된 OrderSummary 업데이트:', {
         선택된상품수: selectedItemCount.value,

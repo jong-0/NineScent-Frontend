@@ -69,6 +69,8 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { cartApi } from '@/api/cartApi';
 import { useAuthStore } from '@/stores/authStore';
+import _ from 'lodash';
+
 import ProductCartItem from '../components/cart/ProductCartItem.vue';
 import OrderSummary from '../components/cart/OrderSummary.vue';
 
@@ -152,45 +154,39 @@ const totalDiscount = computed(() => cartProducts.value.filter((product) => prod
 // 배송비 계산 (10만 원 이상 무료 배송)
 const shipping = computed(() => (subtotal.value >= 100000 ? 0 : 3000));
 
-//  선택된 상품 삭제
-// function removeSelectedItems() {
-//     cartProducts.value = cartProducts.value.filter((product) => !product.selected);
-// }
-
 //  개별 상품 선택 상태 업데이트
 function updateSelected(index, isSelected) {
     cartProducts.value[index].selected = isSelected;
 }
 
+// 디바운싱을 적용한 API 요청 함수(300ms 지연)
+const debouncedUpdateQuantity = _.debounce(async (index, itemId, newQuantity) => {
+    try {
+        console.log('🚀 API 요청 실행: itemId -', itemId, '수량-', newQuantity);
+        await cartApi.updateItem(authStore.userId, itemId, newQuantity);
+    } catch (error) {
+        console.error('❌ 수량 변경 API 요청 실패:', error);
+    }
+}, 300); // ✅ 사용자가 300ms 동안 입력을 멈춘 후에만 실행됨
+
 //  수량 업데이트 (프론트 + 백엔드 동기화)
-// const updateQuantity = async (index, itemId, newQuantity) => {
-//     // 1. 수량 변경
-//     const quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
-//     cartProducts.value[index].quantity = quantity;
-//     cartProducts.value = [...cartProducts.value];
-
-//     // 2. 백엔드 업데이트 요청
-//     try {
-//         await cartApi.updateItem(authStore.userId, itemId, quantity);
-//     } catch (error) {
-//         console.error('수량 변경 실패:', error);
-//     }
-// };
-
 const updateQuantity = async (index, itemId, newQuantity) => {
-    const quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
-
+    // const quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
+    console.log('🛠 수량 변경 감지:', newQuantity);
     // 변경 사항을 감지할 수 있도록 새로운 객체를 생성하여 대입
-    cartProducts.value[index] = { ...cartProducts.value[index], quantity };
+    cartProducts.value[index] = { ...cartProducts.value[index], quantity: newQuantity };
 
     // Vue가 변경 사항을 감지할 수 있도록 배열을 완전히 새로 대입
     cartProducts.value = [...cartProducts.value];
 
-    try {
-        await cartApi.updateItem(authStore.userId, itemId, quantity);
-    } catch (error) {
-        console.error('수량 변경 실패:', error);
-    }
+    // ✅ API 호출 (디바운싱 적용)
+    debouncedUpdateQuantity(index, itemId, newQuantity);
+
+    // try {
+    //     await cartApi.updateItem(authStore.userId, itemId, quantity);
+    // } catch (error) {
+    //     console.error('수량 변경 실패:', error);
+    // }
 };
 
 //  개별 상품 제거
