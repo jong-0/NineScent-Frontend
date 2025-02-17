@@ -55,7 +55,7 @@ onMounted(() => {
       <ul>
         <li><a href="/">BEST</a></li>
         <!-- <li><a href="#" @click="perfumeList">PERFUME</a></li> -->
-        <li><a href="/perfume">PERFUME</a></li>
+        <li><a href="/items">PERFUME</a></li>
         <!-- <li><a href="#" @click="etc">ETC</a></li> -->
         <li><a href="/etc">ETC</a></li>
         <li><a href="#">ABOUT</a></li>

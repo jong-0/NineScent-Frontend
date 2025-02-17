@@ -48,11 +48,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
 import itemApi from '@/api/itemApi';
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const categories = ref(['배송', '재입고', '상품상세문의']);
 
@@ -115,7 +117,6 @@ const submitQna = async () => {
     return;
   }
 
-  qnaData.value.userNo = 1; // 임시 사용자 번호 1
   qnaData.value.createdDate = new Date().toISOString();
   if (qnaData.value.attachment === '') {
     qnaData.value.attachment = '없음';
@@ -138,6 +139,12 @@ const submitQna = async () => {
 onMounted(() => {
   fetchItemData();
   fetchQnaData();
+  authStore.loadStoredToken();
+
+  const getUserNo = localStorage.getItem('userNo');
+  if (getUserNo) {
+    qnaData.value.userNo = parseInt(getUserNo);
+  }
 });
 </script>
 

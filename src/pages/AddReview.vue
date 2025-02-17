@@ -39,11 +39,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
 import itemApi from '@/api/itemApi';
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const reviewData = ref({
   itemId: 0,
@@ -107,7 +109,6 @@ const submitReview = async () => {
     return;
   }
 
-  reviewData.value.userNo = 1; // 임시 사용자 번호 1
   reviewData.value.createdDate = new Date().toISOString();
   if (reviewData.value.attachment === '') {
     reviewData.value.attachment = '없음';
@@ -130,6 +131,12 @@ const submitReview = async () => {
 onMounted(() => {
   fetchItemData();
   fetchReviewData();
+  authStore.loadStoredToken();
+
+  const getUserNo = localStorage.getItem('userNo');
+  if (getUserNo) {
+    reviewData.value.userNo = parseInt(getUserNo);
+  }
 });
 </script>
 

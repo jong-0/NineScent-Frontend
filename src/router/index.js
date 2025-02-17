@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
 import ItemDetail from '@/pages/Item/ItemDetail.vue';
+import ItemList from '@/pages/Item/ItemList.vue';
 import Home from '@/pages/Home.vue';
 import Checkout from '@/pages/Checkout.vue';
 import Address from '@/pages/Address.vue';
@@ -30,6 +31,11 @@ const routes = [
     path: '/items/:id',
     name: 'ItemDetail',
     component: ItemDetail,
+  },
+  {
+    path: '/items',
+    name: 'ItemList',
+    component: ItemList,
   },
   {
     path: '/',

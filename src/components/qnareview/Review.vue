@@ -6,24 +6,23 @@
         <ul class="review-list" v-else>
           <li v-for="review in reviews" :key="review.reviewId" class="review">
             <div>
-              <p>{{ review.name }} {{ formatDate(review.createdDate) }}</p>
-              <p>
+              <p class="content-title">{{ review.name }} {{ formatDate(review.createdDate) }}</p>
+              <p class="content-rate">
                 <span v-for="i in 5" :key="i">
                   <i v-if="i <= review.rating" class="fa-solid fa-star"></i>
                   <i v-else class="fa-regular fa-star"></i>
                 </span>
               </p>
-              <p>{{ review.reviewImage }}</p>
+              <!-- <p>{{ review.reviewImage }}</p> -->
+              <span>
+                <img class="review-image" src="@/assets/images/product2.jpg" alt="" />
+              </span>
 
-              <p>{{ review.content }}</p>
+              <p class="content-content">{{ review.content }}</p>
             </div>
             <div v-if="isReviewOwner(review)">
-              <span class="update" @click="editReview(review)"
-                ><i class="fa-regular fa-pen-to-square"></i
-              ></span>
-              <span class="delete" @click.stop="deleteReview(review.reviewId)"
-                ><i class="fa-solid fa-x"></i
-              ></span>
+              <span class="update" @click="editReview(review)">수정</span>
+              <span class="delete" @click.stop="deleteReview(review.reviewId)">삭제</span>
             </div>
           </li>
         </ul>
@@ -47,11 +46,12 @@ const authStore = useAuthStore();
 
 const reviews = ref([]);
 const isLoading = ref(true);
+let userNo = 0;
 
 const itemId = route.params.itemId;
 
 const isReviewOwner = (review) => {
-  return review.userNo === authStore.user?.userNo;
+  return review.userNo === userNo;
 };
 
 const fetchReviewData = async () => {
@@ -101,6 +101,11 @@ const deleteReview = async (reviewId) => {
 onMounted(() => {
   fetchReviewData();
   authStore.loadStoredToken();
+
+  const getUserNo = localStorage.getItem('userNo');
+  if (getUserNo) {
+    userNo = parseInt(getUserNo);
+  }
 });
 </script>
 
@@ -124,6 +129,8 @@ onMounted(() => {
   list-style: none;
   border-bottom: 1px solid #ccc;
   padding: 10px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .add-review {
@@ -135,5 +142,35 @@ onMounted(() => {
   padding: 5px 15px;
   border-radius: 5px;
   background-color: #ffffff;
+}
+
+.update {
+  margin-right: 10px;
+  cursor: pointer;
+  color: #8a8a8a;
+}
+
+.delete {
+  cursor: pointer;
+  color: #8a8a8a;
+}
+
+.review-image {
+  width: 120px;
+  height: 130px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.content-title {
+  margin-bottom: 0px;
+}
+
+.content-rate {
+  margin-bottom: 5px;
+}
+
+.content-content {
+  margin-bottom: 0px;
 }
 </style>

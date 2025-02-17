@@ -8,9 +8,13 @@
             <li v-for="qna in qnas" :key="qna.qnaId" class="qna">
               <div class="question-header" @click="toggleAnswer(qna.questionId)">
                 <div>
-                  <p>{{ qna.qnaCategory }}</p>
-                  <p>{{ qna.content }}</p>
-                  <p>{{ qna.attachment }}</p>
+                  <p class="content-category">{{ qna.qnaCategory }}</p>
+                  <p class="content-title">Qna 제목</p>
+                  <!-- <p>{{ qna.attachment }}</p> -->
+                  <p class="content-content">{{ qna.content }}</p>
+                  <span>
+                    <img class="review-image" src="@/assets/images/product2.jpg" alt="" />
+                  </span>
                   <p>
                     <span>
                       {{ qna.done ? '답변완료 · ' : '답변대기중 · ' }}
@@ -18,29 +22,27 @@
                     <span> {{ qna.name }} · {{ formatDate(qna.createdDate) }} </span>
                   </p>
                 </div>
-                <div v-if="isQnaOwner(qna)">
-                  <span class="update" @click="editQna(qna)"
-                    ><i class="fa-regular fa-pen-to-square"></i
-                  ></span>
-                  <span class="delete" @click.stop="deleteQna(qna.questionId)"
-                    ><i class="fa-solid fa-x"></i
-                  ></span>
-                </div>
                 <div>
-                  <button
-                    v-if="!qna.done && isAdmin"
-                    @click.stop="toggleAnswerForm(qna.questionId)"
-                  >
-                    답변하기
-                  </button>
-                  <i
-                    v-if="qna.done"
-                    :class="[
-                      'fa-solid',
-                      'fa-chevron-down',
-                      { rotated: openStates[qna.questionId] },
-                    ]"
-                  ></i>
+                  <div v-if="isQnaOwner(qna) && !qna.done">
+                    <span class="update" @click="editQna(qna)">수정</span>
+                    <span class="delete" @click.stop="deleteQna(qna.questionId)">삭제</span>
+                  </div>
+                  <div>
+                    <button
+                      v-if="!qna.done && isAdmin"
+                      @click.stop="toggleAnswerForm(qna.questionId)"
+                    >
+                      답변하기
+                    </button>
+                    <i
+                      v-if="qna.done"
+                      :class="[
+                        'fa-solid',
+                        'fa-chevron-down',
+                        { rotated: openStates[qna.questionId] },
+                      ]"
+                    ></i>
+                  </div>
                 </div>
               </div>
 
@@ -59,10 +61,11 @@
               <!-- 기존 답변 표시 -->
               <div v-if="qna.done && openStates[qna.questionId]" class="answer-section">
                 <div>
-                  <p>답변: {{ getAnswerContent(qna.questionId) }}</p>
-                  <p>답변 날짜: {{ formatDate(getAnswerDate(qna.questionId)) }}</p>
+                  <p class="answer-title">답변. NINESCENT 담당자</p>
+                  <p class="answer-content">{{ getAnswerContent(qna.questionId) }}</p>
+                  <p class="answer-date">{{ formatDate(getAnswerDate(qna.questionId)) }}</p>
                 </div>
-                <div>
+                <div v-if="isAdmin">
                   <button @click="deleteAnswer(qna.questionId)">삭제</button>
                 </div>
               </div>
@@ -93,16 +96,15 @@ const answerFormStates = ref({}); // 답변 폼의 표시 여부를 관리
 const isLoading = ref(true);
 const authStore = useAuthStore();
 
+let userNo = 0;
+let isAdmin = false;
+
 const qnaId = route.params.qnaId;
 const itemId = route.params.itemId;
 
 const isQnaOwner = (qna) => {
-  return qna.userNo === authStore.user?.userNo;
+  return qna.userNo === userNo;
 };
-
-const isAdmin = computed(() => {
-  return authStore.user?.role === 'admin';
-});
 
 const fetchQnaData = async () => {
   if (!itemId) return;
@@ -223,6 +225,15 @@ const deleteAnswer = async (questionId) => {
 onMounted(() => {
   fetchQnaData();
   authStore.loadStoredToken();
+
+  const getUserNo = localStorage.getItem('userNo');
+  const getRole = localStorage.getItem('role');
+
+  if (getUserNo) {
+    userNo = parseInt(getUserNo);
+  }
+
+  isAdmin = getRole === 'ROLE_ADMIN';
 });
 </script>
 
@@ -255,7 +266,7 @@ onMounted(() => {
 .question-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  /* align-items: center; */
   cursor: pointer;
 }
 
@@ -278,7 +289,7 @@ onMounted(() => {
   min-height: 100px;
   margin-bottom: 10px;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid #e2e1e1;
   border-radius: 4px;
   resize: vertical;
 }
@@ -320,6 +331,38 @@ onMounted(() => {
   transform: rotate(180deg);
 }
 
+.update {
+  margin-right: 10px;
+  cursor: pointer;
+  color: #8a8a8a;
+}
+
+.delete {
+  cursor: pointer;
+  color: #8a8a8a;
+}
+
+.content-category {
+  margin-bottom: 0px;
+}
+
+.content-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.content-content {
+  margin-bottom: 0px;
+}
+
+.review-image {
+  width: 120px;
+  height: 130px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 .add-qna {
   text-align: right;
   margin: 20px 0px;
@@ -329,5 +372,14 @@ onMounted(() => {
   padding: 5px 15px;
   border-radius: 5px;
   background-color: #ffffff;
+}
+
+.answer-title {
+  font-weight: 500;
+}
+
+.answer-date {
+  color: #7a7a7a;
+  margin-bottom: 0px;
 }
 </style>

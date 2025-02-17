@@ -23,10 +23,10 @@
             <span class="list-icon"><i class="fa-solid fa-q"></i></span>
             <span class="list-category">{{ categoryLabels[faq.category] }}</span>
             <span class="list-title">{{ faq.title }}</span>
-            <span class="list-update" @click="editFaq(faq.faqId)"
+            <span v-if="isAdmin" class="list-update" @click="editFaq(faq.faqId)"
               ><i class="fa-regular fa-pen-to-square"></i
             ></span>
-            <span class="list-delete" @click.stop="deleteFaq(faq.faqId)"
+            <span v-if="isAdmin" class="list-delete" @click.stop="deleteFaq(faq.faqId)"
               ><i class="fa-solid fa-x"></i
             ></span>
             <span class="list-toggle"
@@ -50,7 +50,7 @@
       <div class="no-content">등록된 게시물이 없습니다.</div>
     </template>
   </div>
-  <div class="add-faq">
+  <div v-if="isAdmin" class="add-faq">
     <button class="add-btn" @click="addFaq">글쓰기</button>
   </div>
 </template>
@@ -69,6 +69,8 @@ const faqs = ref([]);
 const selectedCategory = ref(null);
 const openedFaqId = ref(null);
 const openStates = ref({});
+
+let isAdmin = false;
 
 const categoryLabels = {
   all: '전체',
@@ -135,6 +137,9 @@ const editFaq = (faqId) => {
 onMounted(() => {
   authStore.loadStoredToken();
   fetchFaqCategories();
+
+  const getRole = localStorage.getItem('role');
+  isAdmin = getRole === 'ROLE_ADMIN';
 });
 </script>
 
