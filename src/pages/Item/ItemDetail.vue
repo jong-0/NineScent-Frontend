@@ -14,23 +14,15 @@
         <h1>{{ product.name }}</h1>
         <p class="price">{{ formatPrice(product.price) }}원</p>
         <p>
-          Deep Down Hand Balm 50ml <br />건강하고 소탈한 모습, 내면의 숲을
-          탐색하는 자유로운 여행자를 떠올립니다.<br />
+          Deep Down Hand Balm 50ml <br />건강하고 소탈한 모습, 내면의 숲을 탐색하는 자유로운
+          여행자를 떠올립니다.<br />
           딥 다운의 향기를 핸드 밤으로 만나보세요.
         </p>
         <div class="product-options">
-          <div
-            class="option-group"
-            v-for="option in product.options"
-            :key="option.id"
-          >
+          <div class="option-group" v-for="option in product.options" :key="option.id">
             <label>{{ option.name }}</label>
             <select v-model="selectedOptions[option.id]">
-              <option
-                v-for="choice in option.choices"
-                :key="choice.id"
-                :value="choice.id"
-              >
+              <option v-for="choice in option.choices" :key="choice.id" :value="choice.id">
                 {{ choice.name }} (+{{ formatPrice(choice.additionalPrice) }}원)
               </option>
             </select>
@@ -75,16 +67,11 @@
             <!-- <h2>About Hand Balm</h2> -->
             <p>{{ product.description }}</p>
           </div>
-          <img
-            v-for="img in product.detailImages"
-            :key="img.id"
-            :src="img.url"
-            :alt="img.alt"
-          />
+          <img v-for="img in product.detailImages" :key="img.id" :src="img.url" :alt="img.alt" />
         </div>
 
         <!-- 리뷰 섹션 -->
-        <div v-if="currentTab === 'reviews'" class="reviews">
+        <!-- <div v-if="currentTab === 'reviews'" class="reviews">
           <div class="review-summary">
             <div class="rating">
               <span class="average">{{ averageRating }}</span
@@ -117,10 +104,10 @@
               <p class="review-content">{{ review.content }}</p>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Q&A 섹션 -->
-        <div v-if="currentTab === 'qna'" class="qna">
+        <!-- <div v-if="currentTab === 'qna'" class="qna">
           <div class="qna-list">
             <div v-for="qna in qnaList" :key="qna.id" class="qna-item">
               <div class="question">
@@ -135,15 +122,30 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { useRoute, useRouter } from 'vue-router';
+import Review from '@/components/qnareview/Review.vue';
+import Qna from '@/components/qnareview/Qna.vue';
+import itemApi from '@/api/itemApi';
+
 export default {
   name: 'ProductDetail',
+  components: {
+    Review,
+    Qna,
+  },
+
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    return { route, router };
+  },
 
   data() {
     return {
@@ -270,15 +272,20 @@ export default {
     try {
       // Fetch product details
       const productId = this.$route.params.id;
-      const [productData, reviewsData, qnaData] = await Promise.all([
-        this.$api.products.getDetail(productId),
-        this.$api.reviews.getList({ productId }),
-        this.$api.qna.getList({ productId }),
-      ]);
+      console.log('productId: ', productId);
+
+      // const [productData] = await Promise.all([
+      //   this.$api.products.getDetail(productId),
+      //   this.$api.reviews.getList({ productId }),
+      //   this.$api.qna.getList({ productId }),
+      // ]);
+
+      const productData = await itemApi.getItemById(productId);
+      console.log('productData: ', productData);
 
       this.product = productData;
-      this.reviews = reviewsData.items;
-      this.qnaList = qnaData.items;
+      // this.reviews = reviewsData.items;
+      // this.qnaList = qnaData.items;
 
       // Initialize selected options
       this.product.options.forEach((option) => {
