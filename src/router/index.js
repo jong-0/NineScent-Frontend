@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
 import ItemDetail from '@/pages/Item/ItemDetail.vue';
+import ItemList from '@/pages/Item/ItemList.vue';
 import Home from '@/pages/Home.vue';
 import Login from '@/pages/member/Login.vue';
 import Signup from '@/pages/member/Signup.vue';
@@ -14,6 +15,13 @@ import AddAddress from '@/pages/AddAddress.vue';
 import UpdateAddress from '@/pages/UpdateAddress.vue';
 import CSCenter from '@/pages/CSCenter.vue';
 import AddFaq from '@/pages/AddFaq.vue';
+import Perfume from '@/pages/Perfume.vue';
+import Etc from '@/pages/Etc.vue';
+import Item from '@/pages/Item.vue';
+import AddQna from '@/pages/AddQna.vue';
+import AddReview from '@/pages/AddReview.vue';
+import Login from '@/pages/Login.vue';
+import Signup from '@/pages/Signup.vue';
 
 import MyPage from '@/pages/MyPage.vue';
 // import Category from '@/pages/Category.vue';
@@ -29,6 +37,11 @@ const routes = [
     path: '/items/:id',
     name: 'ItemDetail',
     component: ItemDetail,
+  },
+  {
+    path: '/items',
+    name: 'ItemList',
+    component: ItemList,
   },
   {
     path: '/',
@@ -48,66 +61,140 @@ const routes = [
     component: Signup,
   },
 
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: Cart,
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: Checkout,
+  },
+  {
+    path: '/address/:userNo',
+    name: 'Address',
+    component: Address,
+  },
+  {
+    path: '/addaddress',
+    name: 'AddAddress',
+    component: AddAddress,
+  },
+  {
+    path: '/updateaddress/:addrNo',
+    name: 'UpdateAddress',
+    component: UpdateAddress,
+  },
+  {
+    path: '/cscenter',
+    name: 'CSCenter',
+    component: CSCenter,
+  },
+  {
+    path: '/faq/add',
+    name: 'AddFaq',
+    component: AddFaq,
+  },
+  {
+    path: '/faq/update/:faqId',
+    name: 'UpdateFaq',
+    component: AddFaq,
+  },
+  {
+    path: '/perfume',
+    name: 'Perfume',
+    component: Perfume,
+  },
+  {
+    path: '/etc',
+    name: 'Etc',
+    component: Etc,
+  },
+  {
+    path: '/item/:itemId',
+    name: 'Item',
+    component: Item,
+  },
+  {
+    path: '/qna/:itemId/add',
+    name: 'AddQna',
+    component: AddQna,
+  },
+  {
+    path: '/qna/:itemId/add/:questionId',
+    name: 'UpdateQna',
+    component: AddQna,
+  },
+  {
+    path: '/review/:itemId/add/',
+    name: 'AddReview',
+    component: AddReview,
+  },
+  {
+    path: '/review/:itemId/add/:reviewId',
+    name: 'UpdateReview',
+    component: AddReview,
+  },
 
-    {
-        path: '/findId',
-        name: 'FindId',
-        component: FindId,
-    },
+  {
+    path: '/findId',
+    name: 'FindId',
+    component: FindId,
+  },
 
-    {
-        path: '/findPw',
-        name: 'FindPw',
-        component: FindPw,
-    },
-    {
-        path: '/cart',
-        name: 'Cart',
-        component: Cart,
-    },
-    {
-        path: '/checkout',
-        name: 'Checkout',
-        component: Checkout,
-    },
+  {
+    path: '/findPw',
+    name: 'FindPw',
+    component: FindPw,
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: Cart,
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: Checkout,
+  },
 
-    {
-        path: '/complete',
-        name: 'OrderComplete',
-        component: OrderComplete,
-    },
+  {
+    path: '/complete',
+    name: 'OrderComplete',
+    component: OrderComplete,
+  },
 
-    {
-        path: '/address/:userNo',
-        name: 'Address',
-        component: Address,
-    },
-    {
-        path: '/addaddress',
-        name: 'AddAddress',
-        component: AddAddress,
-    },
-    {
-        path: '/updateaddress/:addrNo',
-        name: 'UpdateAddress',
-        component: UpdateAddress,
-    },
-    {
-        path: '/cscenter',
-        name: 'CSCenter',
-        component: CSCenter,
-    },
-    {
-        path: '/faq/add',
-        name: 'AddFaq',
-        component: AddFaq,
-    },
-    {
-        path: '/faq/update/:faqId',
-        name: 'UpdateFaq',
-        component: AddFaq,
-    },
-
+  {
+    path: '/address/:userNo',
+    name: 'Address',
+    component: Address,
+  },
+  {
+    path: '/addaddress',
+    name: 'AddAddress',
+    component: AddAddress,
+  },
+  {
+    path: '/updateaddress/:addrNo',
+    name: 'UpdateAddress',
+    component: UpdateAddress,
+  },
+  {
+    path: '/cscenter',
+    name: 'CSCenter',
+    component: CSCenter,
+  },
+  {
+    path: '/faq/add',
+    name: 'AddFaq',
+    component: AddFaq,
+  },
+  {
+    path: '/faq/update/:faqId',
+    name: 'UpdateFaq',
+    component: AddFaq,
+  },
 
   {
     path: '/mypage/:id',
@@ -144,9 +231,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 인증이 필요한 페이지 (예: MyPage)
-  const requiresAuth = to.matched.some((record) =>
-    record.path.startsWith('/mypage')
-  );
+  const requiresAuth = to.matched.some((record) => record.path.startsWith('/mypage'));
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // 인증이 필요한 페이지에 접근했지만 로그인되지 않은 경우

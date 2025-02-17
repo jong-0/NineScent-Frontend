@@ -1,30 +1,51 @@
 <template>
   <div>
     <h1>Review form</h1>
-    <div>
-      <h2>{{ itemData.itemName }}</h2>
-      <p>{{ itemData.itemSize }}</p>
-      <p>{{ itemData.mainPhoto }}</p>
+    <div class="item-container">
+      <div class="item-photo">
+        <p>{{ itemData.mainPhoto }}</p>
+      </div>
+      <div class="item-info">
+        <p>{{ itemData.itemSize }} {{ itemData.itemName }}</p>
+        <p>{{ priceText }}</p>
+      </div>
     </div>
-    <select v-model="reviewData.rating">
-      <option v-for="i in 5" :key="i" :value="i">{{ i }}</option>
-    </select>
-    <p>어떤 점이 좋았나요?</p>
+    <div class="star-rating">
+      <i
+        v-for="i in 5"
+        :key="i"
+        :class="i <= reviewData.rating ? 'fa-solid fa-star' : 'fa-regular fa-star'"
+        @click="setRating(i)"
+      ></i>
+    </div>
+    <hr />
+    <h5 class="content-title">어떤 점이 좋았나요?</h5>
     <br />
-    <input type="text" v-model="reviewData.content" placeholder="내용" /><br />
-    <input type="text" v-model="reviewData.attachment" placeholder="사진첨부" /><br />
-    <button @click="submitReview">등록</button>
+    <textarea
+      class="content"
+      type="text"
+      v-model="reviewData.content"
+      placeholder="후기 내용을 입력해주세요"
+    /><br />
+    <div class="img-container">
+      <input type="file" />
+    </div>
+    <div class="add-review">
+      <button class="add-btn" @click="submitReview">등록</button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
 import itemApi from '@/api/itemApi';
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const reviewData = ref({
   itemId: 0,
@@ -38,11 +59,27 @@ const reviewData = ref({
 const itemData = ref({
   itemName: '',
   itemSize: '',
+  discountRate: 0,
+  discountedPrice: 0,
   mainPhoto: '',
 });
 
 const itemId = route.params.itemId;
 const reviewId = route.params.reviewId;
+
+const setRating = (rating) => {
+  reviewData.value.rating = rating;
+};
+
+const formattedPrice = computed(() => {
+  return itemData.value.discountedPrice.toLocaleString();
+});
+
+const priceText = computed(() => {
+  return itemData.value.discountRate > 0
+    ? `${itemData.value.discountRate}% ${formattedPrice.value}원`
+    : `${formattedPrice.value}원`;
+});
 
 const fetchItemData = async () => {
   if (!itemId) return;
@@ -72,7 +109,6 @@ const submitReview = async () => {
     return;
   }
 
-  reviewData.value.userNo = 1; // 임시 사용자 번호 1
   reviewData.value.createdDate = new Date().toISOString();
   if (reviewData.value.attachment === '') {
     reviewData.value.attachment = '없음';
@@ -95,7 +131,73 @@ const submitReview = async () => {
 onMounted(() => {
   fetchItemData();
   fetchReviewData();
+  authStore.loadStoredToken();
+
+  const getUserNo = localStorage.getItem('userNo');
+  if (getUserNo) {
+    reviewData.value.userNo = parseInt(getUserNo);
+  }
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.item-container {
+  display: flex;
+  margin: 20px 0px 0px 0px;
+  border-top: 2px solid #000000;
+  /* border-bottom: 1px solid #000000; */
+  padding: 15px;
+}
+
+.item-photo {
+  width: 100px;
+  height: 100px;
+  margin-right: 20px;
+}
+
+.star-rating {
+  display: flex;
+  gap: 5px;
+  font-size: 24px;
+  color: rgb(255, 204, 0); /* 별 색상 */
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+.star-rating i {
+  transition: transform 0.2s;
+}
+
+.star-rating i:hover {
+  transform: scale(1.2); /* 마우스 오버 시 확대 */
+}
+
+.content-title {
+  margin-top: 20px;
+  margin-bottom: 0px;
+}
+
+.content {
+  width: 100%;
+  height: 200px;
+  padding: 8px;
+  /* margin-top: 10px; */
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.add-review {
+  text-align: right;
+  cursor: pointer;
+}
+
+.add-btn {
+  border-radius: 5px;
+  padding: 4px 15px;
+  background: #ffffff;
+}
+
+.add-btn:hover {
+  background: #f0f0f0;
+}
+</style>

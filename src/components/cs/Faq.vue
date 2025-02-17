@@ -15,47 +15,62 @@
   </div>
 
   <div class="faq-list">
-    <template v-for="faq in faqs" :key="faq.faqId">
-      <!-- FAQ 질문 행 -->
-      <div class="faq-items">
-        <button class="faq-item" @click="toggleFaq(faq.faqId)">
-          <span class="list-icon"><i class="fa-solid fa-q"></i></span>
-          <span class="list-category">{{ categoryLabels[faq.category] }}</span>
-          <span class="list-title">{{ faq.title }}</span>
-          <span class="list-update" @click="editFaq(faq.faqId)"
-            ><i class="fa-regular fa-pen-to-square"></i
-          ></span>
-          <span class="list-delete" @click.stop="deleteFaq(faq.faqId)"
-            ><i class="fa-solid fa-x"></i
-          ></span>
-        </button>
+    <template v-if="faqs.length > 0">
+      <template v-for="faq in faqs" :key="faq.faqId">
+        <!-- FAQ 질문 행 -->
+        <div class="faq-items">
+          <button class="faq-item" @click="toggleFaq(faq.faqId)">
+            <span class="list-icon"><i class="fa-solid fa-q"></i></span>
+            <span class="list-category">{{ categoryLabels[faq.category] }}</span>
+            <span class="list-title">{{ faq.title }}</span>
+            <span v-if="isAdmin" class="list-update" @click="editFaq(faq.faqId)"
+              ><i class="fa-regular fa-pen-to-square"></i
+            ></span>
+            <span v-if="isAdmin" class="list-delete" @click.stop="deleteFaq(faq.faqId)"
+              ><i class="fa-solid fa-x"></i
+            ></span>
+            <span class="list-toggle"
+              ><i
+                :class="['fa-solid', 'fa-chevron-down', { rotated: openedFaqId === faq.faqId }]"
+              ></i
+            ></span>
+          </button>
 
-        <!-- 클릭된 FAQ의 답변을 바로 아래에 표시 -->
-        <transition name="slide">
-          <div v-if="openedFaqId === faq.faqId" class="faq-answer">
-            <i class="fa-solid fa-a"></i>
-            <span>{{ faq.content }}</span>
-          </div>
-        </transition>
-      </div>
+          <!-- 클릭된 FAQ의 답변을 바로 아래에 표시 -->
+          <transition name="slide">
+            <div v-if="openedFaqId === faq.faqId" class="faq-answer">
+              <i class="fa-solid fa-a"></i>
+              <span>{{ faq.content }}</span>
+            </div>
+          </transition>
+        </div>
+      </template>
+    </template>
+    <template v-else>
+      <div class="no-content">등록된 게시물이 없습니다.</div>
     </template>
   </div>
-  <div>
-    <button @click="addFaq">글쓰기</button>
+  <div v-if="isAdmin" class="add-faq">
+    <button class="add-btn" @click="addFaq">글쓰기</button>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const categories = ref([]);
 const faqs = ref([]);
 const selectedCategory = ref(null);
 const openedFaqId = ref(null);
+const openStates = ref({});
+
+let isAdmin = false;
 
 const categoryLabels = {
   all: '전체',
@@ -95,6 +110,7 @@ const setCategory = (category) => {
 // FAQ 클릭 시 토글 (펼치기/닫기)
 const toggleFaq = (faqId) => {
   openedFaqId.value = openedFaqId.value === faqId ? null : faqId;
+  openStates.value[faqId] = !openStates.value[faqId];
 };
 
 const deleteFaq = async (faqId) => {
@@ -104,6 +120,7 @@ const deleteFaq = async (faqId) => {
     }
     await faqnaReviewApi.deleteFaq(faqId);
     fetchFaqs(selectedCategory.value);
+    fetchFaqCategories();
   } catch (error) {
     console.error('Error deleting faq', error);
   }
@@ -118,7 +135,11 @@ const editFaq = (faqId) => {
 };
 
 onMounted(() => {
+  authStore.loadStoredToken();
   fetchFaqCategories();
+
+  const getRole = localStorage.getItem('role');
+  isAdmin = getRole === 'ROLE_ADMIN';
 });
 </script>
 
@@ -133,6 +154,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .faq-items {
@@ -183,9 +206,41 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.list-toggle {
+  margin-left: 20px;
+}
+
 button.active {
   /* background-color: #f0f0f0; */
   font-weight: bold;
   text-decoration-line: underline;
+}
+
+.no-content {
+  text-align: center;
+  margin: 20px 0px;
+}
+
+.add-faq {
+  text-align: right;
+  margin: 20px 0px;
+}
+
+.add-btn {
+  padding: 5px 15px;
+  border-radius: 5px;
+  background-color: #ffffff;
+}
+
+.add-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.fa-chevron-down {
+  transition: transform 0.3s ease;
+}
+
+.fa-chevron-down.rotated {
+  transform: rotate(180deg);
 }
 </style>
