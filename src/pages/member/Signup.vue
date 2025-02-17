@@ -8,8 +8,8 @@
             <div class="form-group">
                 <label for="username">아이디 *</label>
                 <input type="text" id="username" v-model="form.username" placeholder="영문 소문자/숫자, 4~16자" @blur="validateUsername" required />
-                <p class="error-message" v-if="usernameError">{{ usernameError }}</p>
             </div>
+            <div class="error-message" v-show="showError.username" :class="{ hide: !showError.username }"><i class="fas fa-info-circle"></i> {{ usernameError }}</div>
 
             <!-- 비밀번호 -->
             <div class="form-group">
@@ -21,8 +21,8 @@
             <div class="form-group">
                 <label for="passwordConfirm">비밀번호 확인 *</label>
                 <input type="password" id="passwordConfirm" v-model="form.passwordConfirm" @input="validatePasswordMatch" required />
-                <p class="error-message" v-if="passwordError">{{ passwordError }}</p>
             </div>
+            <div class="error-message" v-show="showError.password" :class="{ hide: !showError.password }"><i class="fas fa-info-circle"></i> {{ passwordError }}</div>
 
             <!-- 이름 -->
             <div class="form-group">
@@ -70,12 +70,13 @@
             </div>
 
             <!-- 이메일 -->
+
             <div class="form-group">
                 <label for="email">이메일 *</label>
                 <input type="email" id="email" v-model="form.email" @blur="validateEmail" required />
-                <p class="error-message" v-if="emailError">{{ emailError }}</p>
             </div>
             <div class="email-info"><i class="fas fa-info-circle"></i> 이메일 인증: 입력하신 이메일로 인증메일이 발송됩니다.</div>
+            <div class="error-message" v-show="showError.email" :class="{ hide: !showError.email }"><i class="fas fa-info-circle"></i> {{ emailError }}</div>
 
             <!-- 생년월일 -->
             <div class="form-group">
@@ -99,6 +100,7 @@
 </template>
 <script setup>
 import { ref, computed } from 'vue';
+import axios from 'axios';
 import DaumAddress from '@/components/user/DaumAddressFInd.vue';
 
 //지역번호 리스트 (배열을 이용해 동적 생성)
@@ -128,58 +130,91 @@ const updateAddress = (data) => {
     form.value.extraAddress = data.addrExtraDetail;
 };
 
+const usernameError = ref('');
+const passwordError = ref('');
+const emailError = ref('');
+const showError = ref({
+    username: false,
+    password: false,
+    email: false,
+});
+
 // 아이디 중복 검사
 const validateUsername = async () => {
     if (!form.value.username.trim()) {
         usernameError.value = '아이디를 입력하세요.';
-        return;
-    }
-    try {
-        const response = await axios.get(`/api/member/checkusername/${form.value.username}`);
-        if (!response.data) {
-            usernameError.value = ''; // 사용 가능한 아이디
-        } else {
-            usernameError.value = '이미 사용 중인 아이디입니다.';
+        showError.value.username = true;
+    } else {
+        try {
+            const response = await axios.get(`/api/user/checkusername/${form.value.username}`);
+            if (!response.data) {
+                usernameError.value = ''; // 사용 가능
+                showError.value.username = false;
+            } else {
+                usernameError.value = '이미 사용 중인 아이디입니다.';
+                showError.value.username = true;
+            }
+        } catch (error) {
+            console.error('아이디 중복 검사 오류:', error);
+            usernameError.value = '아이디 확인 중 오류가 발생했습니다.';
+            showError.value.username = true;
         }
-    } catch (error) {
-        console.error('아이디 중복 검사 오류:', error);
     }
 };
 
 // 비밀번호 일치 검사
 const validatePasswordMatch = () => {
-    if (!form.value.password.trim() || !form.value.passwordConfirm.trim()) {
-        passwordError.value = ''; // 아무 입력이 없을 경우 메시지 제거
-        return;
-    }
-    if (form.value.password !== form.value.passwordConfirm) {
+    const { password, passwordConfirm } = form.value;
+
+    if (!password.trim()) {
+        passwordError.value = '비밀번호를 입력하세요.';
+        showError.value.password = true;
+    } else if (!/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{10,16}$/.test(password)) {
+        passwordError.value = '영문/숫자/특수문자 포함 10~16자로 입력하세요.';
+        showError.value.password = true;
+    } else if (!passwordConfirm.trim()) {
+        passwordError.value = '비밀번호 확인을 입력하세요.';
+        showError.value.password = true;
+    } else if (password !== passwordConfirm) {
         passwordError.value = '비밀번호가 일치하지 않습니다.';
+        showError.value.password = true;
     } else {
-        passwordError.value = ''; // 일치하면 메시지 제거
+        passwordError.value = '';
+        showError.value.password = false;
     }
+
+    // setTimeout(() => (showError.value.password = false), 3000);
 };
 
 // 이메일 중복 검사
 const validateEmail = async () => {
-    if (!form.value.email.trim()) {
-        emailError.value = '이메일을 입력하세요.';
-        return;
-    }
+    const email = form.value.email.trim();
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(form.value.email)) {
+
+    if (!email) {
+        emailError.value = '이메일을 입력하세요.';
+        showError.value.email = true;
+    } else if (!emailPattern.test(email)) {
         emailError.value = '올바른 이메일 형식이 아닙니다.';
-        return;
-    }
-    try {
-        const response = await axios.get(`/api/member/checkemail/${form.value.email}`);
-        if (!response.data) {
-            emailError.value = ''; // 사용 가능한 이메일
-        } else {
-            emailError.value = '이미 사용 중인 이메일입니다.';
+        showError.value.email = true;
+    } else {
+        try {
+            const response = await axios.get(`/api/user/checkemail/${email}`);
+            if (!response.data) {
+                emailError.value = ''; // 사용 가능
+                showError.value.email = false;
+            } else {
+                emailError.value = '이미 사용 중인 이메일입니다.';
+                showError.value.email = true;
+            }
+        } catch (error) {
+            console.error('이메일 중복 검사 오류:', error);
+            emailError.value = '이메일 확인 중 오류가 발생했습니다.';
+            showError.value.email = true;
         }
-    } catch (error) {
-        console.error('이메일 중복 검사 오류:', error);
     }
+
+    // setTimeout(() => (showError.value.email = false), 3000);
 };
 
 // 회원가입 버튼 활성화 조건
@@ -344,5 +379,27 @@ const handleSubmit = async () => {
 .btn-submit:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+/* 에러 메시지 스타일 (email-info와 유사한 위치) */
+.error-message {
+    font-size: 12px;
+    color: red;
+    margin-left: 140px;
+    margin-bottom: 20px;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.email-info {
+    font-size: 12px;
+    color: #555;
+    margin-left: 140px;
+    margin-bottom: 20px;
+}
+
+/* 에러 메시지 숨김 처리 */
+.error-message.hide {
+    opacity: 0;
 }
 </style>
