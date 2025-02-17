@@ -20,8 +20,6 @@ import Etc from '@/pages/Etc.vue';
 import Item from '@/pages/Item.vue';
 import AddQna from '@/pages/AddQna.vue';
 import AddReview from '@/pages/AddReview.vue';
-import Login from '@/pages/Login.vue';
-import Signup from '@/pages/Signup.vue';
 
 import MyPage from '@/pages/MyPage.vue';
 // import Category from '@/pages/Category.vue';
