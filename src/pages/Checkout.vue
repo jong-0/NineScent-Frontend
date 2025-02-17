@@ -42,7 +42,6 @@
   <div>
     <button @click="onPayment">결제하기</button>
   </div>
-
 </template>
 
 <script setup>
@@ -76,7 +75,6 @@ const fetchOrderData = () => {
   }
 };
 
-
 const fetchAddressData = async () => {
   // 기본 주소 불러오기 (새로운 주문 시)
   if (!userNo) return;
@@ -105,7 +103,6 @@ const fetchAddressData = async () => {
 };
 // 총 결제 금액 계산
 const finalPrice = computed(() => {
-
   if (orderType === 'cart' && cartData.value) {
     return cartData.value.cartItems.reduce(
       (sum, item) => sum + item.quantity * item.price,
@@ -124,49 +121,48 @@ const goToAddressPage = () => {
 onMounted(() => {
   fetchOrderData();
   fetchAddressData();
-
 });
 
 // 결제 처리 함수
 const onPayment = () => {
+  /* 1. 가맹점 식별하기 */
+  const { IMP } = window;
+  if (!IMP) {
+    alert(
+      '결제 시스템을 불러오지 못했습니다. 페이지를 새로고침 해주세요.'
+    );
+    return;
+  }
+  IMP.init('imp35201335'); // 아임포트 가맹점 식별코드 (테스트용)
 
-    /* 1. 가맹점 식별하기 */
-    const { IMP } = window;
-    if (!IMP) {
-        alert('결제 시스템을 불러오지 못했습니다. 페이지를 새로고침 해주세요.');
-        return;
-    }
-    IMP.init('imp35201335'); // 아임포트 가맹점 식별코드 (테스트용)
+  /* 2. 결제 데이터 정의하기 */
+  const data = {
+    pg: 'nice', // PG사
+    pay_method: 'card', // 결제수단
+    merchant_uid: `mid_${new Date().getTime()}`, // 주문번호
+    amount: finalPrice.value, // 결제금액
+    name: '주문 상품 결제', // 주문명
+    buyer_name: addressData.value.addrName, // 구매자 이름
+    buyer_tel: addressData.value.addrContact, // 구매자 전화번호
+    buyer_email: 'example@example.com', // 구매자 이메일 (데이터 추가 가능)
+    buyer_addr: addressData.value.addrAddress, // 구매자 주소
+    buyer_postcode: addressData.value.addrZipcode, // 구매자 우편번호
+  };
 
-    /* 2. 결제 데이터 정의하기 */
-    const data = {
-        pg: 'nice', // PG사
-        pay_method: 'card', // 결제수단
-        merchant_uid: `mid_${new Date().getTime()}`, // 주문번호
-        amount: finalPrice.value, // 결제금액
-        name: '주문 상품 결제', // 주문명
-        buyer_name: addressData.value.addrName, // 구매자 이름
-        buyer_tel: addressData.value.addrContact, // 구매자 전화번호
-        buyer_email: 'example@example.com', // 구매자 이메일 (데이터 추가 가능)
-        buyer_addr: addressData.value.addrAddress, // 구매자 주소
-        buyer_postcode: addressData.value.addrZipcode, // 구매자 우편번호
-    };
-
-    /* 3. 결제 창 호출 */
-    IMP.request_pay(data, callbackPayment);
+  /* 3. 결제 창 호출 */
+  IMP.request_pay(data, callbackPayment);
 };
 
 /*   결제 결과 콜백 함수 */
 const callbackPayment = (response) => {
-    const { success, merchant_uid, error_msg } = response;
+  const { success, merchant_uid, error_msg } = response;
 
-    if (success) {
-        alert('결제 성공');
-        router.replace({ name: 'OrderComplete' }); // 결제 완료 페이지로 이동
-    } else {
-        alert(`결제 실패: ${error_msg}`);
-    }
-=======
+  if (success) {
+    alert('결제 성공');
+    router.replace({ name: 'OrderComplete' }); // 결제 완료 페이지로 이동
+  } else {
+    alert(`결제 실패: ${error_msg}`);
+  }
   /* 1. 가맹점 식별하기 */
   const { IMP } = window;
   if (!IMP) {
@@ -196,59 +192,5 @@ const callbackPayment = (response) => {
 
   /* 3. 결제 창 호출 */
   IMP.request_pay(data, callbackPayment);
-};
-
-/* 결제 결과 콜백 함수 */
-const callbackPayment = async (response) => {
-  const { success, error_msg } = response;
-
-  if (success) {
-    alert('결제 성공');
-
-    // 결제 성공 후 백엔드에 주문 정보 저장
-    const orderData = {
-      userNo: userNo,
-      addressNo: addressData.value?.addrNo,
-      orderItems: [
-        {
-          itemId: itemData.value?.itemId,
-          quantity: itemData.value?.quantity || 1,
-          originalPrice: itemData.value?.originalPrice || 0,
-          discountedPrice:
-            itemData.value?.discountedPrice ||
-            itemData.value?.originalPrice ||
-            0,
-        },
-      ],
-      paymentDone: true,
-    };
-
-    console.log('**********orderData', orderData);
-
-    try {
-      const orderResponse = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!orderResponse.ok)
-        throw new Error('주문 저장 실패');
-
-      const orderResult = await orderResponse.json();
-      const orderId = orderResult.orderId; // 저장된 주문 ID 가져오기
-
-      // 주문 상세 페이지로 이동 (에러 해결)
-      router.replace({
-        name: 'OrderDetail',
-        params: { orderId },
-      });
-    } catch (error) {
-      alert('주문 저장 실패: ' + error.message);
-    }
-  } else {
-    alert(`결제 실패: ${error_msg}`);
-  }
-
 };
 </script>
