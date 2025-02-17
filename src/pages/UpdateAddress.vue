@@ -1,88 +1,102 @@
 <template>
-  <div>
-    <h1>Address Form</h1>
-    <input
-      type="text"
-      v-model="addressData.addrNicName"
-      placeholder="주소지 별칭"
-    /><br />
-    <input
-      type="text"
-      v-model="addressData.addrName"
-      placeholder="받는 사람"
-    /><br />
-    <input
-      type="text"
-      v-model="addressData.addrContact"
-      placeholder="연락처"
-    /><br /><br />
+  <div class="address-form-container">
+    <h1 class="title">배송지 수정</h1>
 
-    <input
-      type="text"
-      id="addrZipcode"
-      v-model="addressData.addrZipcode"
-      placeholder="우편번호"
-    />
-    <input
-      type="button"
-      @click="execDaumPostcode"
-      value="우편번호 찾기"
-    /><br />
-    <input
-      type="text"
-      id="addrAddress"
-      v-model="addressData.addrAddress"
-      placeholder="주소"
-    /><br />
-    <input
-      type="text"
-      id="addrDetail"
-      v-model="addressData.addrDetail"
-      placeholder="상세주소"
-    />
-    <input
-      type="text"
-      id="addrExtraDetail"
-      v-model="addressData.addrExtraDetail"
-      placeholder="참고주소"
-    /><br />
-
-    <input
-      type="text"
-      v-model="addressData.addrRequest"
-      placeholder="배송관련 요청사항"
-    /><br />
-    <label>
+    <div class="address-form">
       <input
-        type="checkbox"
-        v-model="addressData.isDefault"
+        type="text"
+        v-model="addressData.addrNicName"
+        placeholder="주소지 별칭"
+        class="input-field"
       />
-      기본 배송지로 설정
-    </label>
-    <br />
-    <button @click="submitAddress">확인</button>
+      <input
+        type="text"
+        v-model="addressData.addrName"
+        placeholder="받는 사람"
+        class="input-field"
+      />
+      <input
+        type="text"
+        v-model="addressData.addrContact"
+        placeholder="연락처"
+        class="input-field"
+      />
 
-    <div
-      id="wrap"
-      style="
-        display: none;
-        border: 1px solid;
-        width: 500px;
-        height: 300px;
-        margin: 5px 0;
-        position: relative;
-      "
-    >
+      <div class="zipcode-container">
+        <input
+          type="text"
+          id="addrZipcode"
+          v-model="addressData.addrZipcode"
+          placeholder="우편번호"
+          class="input-field zipcode"
+        />
+        <button
+          class="btn zipcode-btn"
+          @click="execDaumPostcode"
+        >
+          우편번호 찾기
+        </button>
+      </div>
+
+      <input
+        type="text"
+        id="addrAddress"
+        v-model="addressData.addrAddress"
+        placeholder="주소"
+        class="input-field"
+      />
+      <input
+        type="text"
+        id="addrDetail"
+        v-model="addressData.addrDetail"
+        placeholder="상세주소"
+        class="input-field"
+      />
+      <input
+        type="text"
+        id="addrExtraDetail"
+        v-model="addressData.addrExtraDetail"
+        placeholder="참고주소"
+        class="input-field"
+      />
+
+      <input
+        type="text"
+        v-model="addressData.addrRequest"
+        placeholder="배송관련 요청사항"
+        class="input-field"
+      />
+
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          v-model="addressData.isDefault"
+        />
+        기본 배송지로 설정
+      </label>
+
+      <div class="button-group">
+        <button
+          class="btn cancel-btn"
+          @click="cancelUpdate"
+        >
+          취소
+        </button>
+        <button
+          class="btn submit-btn"
+          @click="submitAddress"
+        >
+          수정 완료
+        </button>
+      </div>
+    </div>
+
+    <!-- 우편번호 찾기 -->
+    <div id="wrap" class="zipcode-modal">
       <img
         src="//t1.daumcdn.net/postcode/resource/images/close.png"
         id="btnFoldWrap"
-        style="
-          cursor: pointer;
-          position: absolute;
-          right: 0px;
-          top: -1px;
-          z-index: 1;
-        "
+        class="close-btn"
         @click="foldDaumPostcode"
         alt="접기 버튼"
       />
@@ -208,6 +222,9 @@ const foldDaumPostcode = () => {
   if (element) element.style.display = 'none';
 };
 
+const cancelUpdate = () => {
+  router.push({ name: 'Address', params: { userNo } }); // Address 페이지로 이동
+};
 // 백엔드로 주소 데이터 저장
 const submitAddress = async () => {
   console.log(addressData.value);
@@ -240,3 +257,117 @@ onMounted(() => {
   fetchAddress();
 });
 </script>
+
+<style scoped>
+/* 전체 컨테이너 */
+.address-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f7f6f0;
+  border-radius: 10px;
+  border: 1px solid #d6d3cb;
+}
+
+.title {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+/* 입력 폼 스타일 */
+.address-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* 우편번호 검색 */
+.zipcode-container {
+  display: flex;
+  gap: 10px;
+}
+
+.zipcode {
+  flex: 2;
+}
+
+.zipcode-btn {
+  flex: 1;
+  background: #008cba;
+  color: white;
+}
+
+/* 체크박스 스타일 */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  gap: 8px;
+}
+
+/* 버튼 스타일 */
+.btn {
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn {
+  background: #1a1a1a;
+  color: white;
+}
+
+.cancel-btn {
+  background: #d9534f;
+  color: white;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* 우편번호 찾기 모달 */
+.zipcode-modal {
+  display: none;
+  border: 1px solid #ccc;
+  width: 500px;
+  height: 300px;
+  margin: 5px 0;
+  position: relative;
+}
+
+.close-btn {
+  cursor: pointer;
+  position: absolute;
+  right: 0px;
+  top: -1px;
+  z-index: 1;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .zipcode-container {
+    flex-direction: column;
+  }
+  .zipcode-btn {
+    width: 100%;
+  }
+  .button-group {
+    flex-direction: column;
+  }
+}
+</style>

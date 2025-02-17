@@ -7,7 +7,7 @@
 
         <!-- 이미지 -->
         <div class="product-image-container me-3">
-            <img class="product-image" :src="thumbSrc" :alt="thumbAlt" />
+            <img class="product-image" :src="imageUrl" :alt="thumbAlt" />
         </div>
 
         <!-- 상품 정보 -->
@@ -28,18 +28,14 @@
         </div>
 
         <!-- 수량 입력 영역 -->
-        <!-- <div class="quantity-input me-3">
-            <input type="number" :value="quantity" @input="$emit('update-quantity', $event.target.value)" min="1" class="form-control" placeholder="1" aria-label="amount" />
-        </div> -->
-        <!-- 수량 입력 영역 -->
         <div class="quantity-input me-3">
-            <input type="number" :value="quantity" @input="updateQuantity($event.target.value)" min="1" class="form-control" placeholder="1" aria-label="amount" />
+            <input type="number" :value="quantity" @input="updateQuantity" min="1" :max="stock" class="form-control" placeholder="1" aria-label="amount" />
         </div>
 
         <!-- 총 금액 영역 -->
         <div class="price-area ms-3 flex-grow-1 text-end position-relative">
             <!-- 삭제 버튼 (금액 위쪽) -->
-            <button class="delete-button" @click.prevent="$emit('remove-item')"><i class="fas fa-trash-alt" style="font-size: 12px"></i> 삭제</button>
+            <button class="delete-button" @click.prevent="removeItem"><i class="fas fa-trash-alt" style="font-size: 12px"></i> 삭제</button>
             <h6 class="mb-1">{{ totalPrice }} 원</h6>
             <p class="text-muted small mt-1">- {{ formattedDiscount }} 원</p>
         </div>
@@ -56,7 +52,7 @@ const authStore = useAuthStore();
 // Props 선언
 const props = defineProps({
     itemId: { type: Number, required: true }, // 상품 ID
-    thumbSrc: { type: String, required: true },
+    imageUrl: { type: String, required: true },
     thumbAlt: { type: String, required: true },
     title: { type: String, required: true },
     size: { type: String, required: true },
@@ -90,19 +86,24 @@ const stockIcon = computed(() => {
     return props.stock === 0 ? 'fas fa-minus-circle text-danger' : 'fas fa-check text-success';
 });
 
-// ✅ 수량 변경
+// 수량 변경
 const updateQuantity = (event) => {
-    const newQuantity = parseInt(event.target.value, 10) || 1;
+    const newQuantity = parseInt(event?.target?.value, 10) || 1;
+    //재고 초과 방지
+    if (newQuantity > props.stock) {
+        newQuantity = props.stock;
+    }
+    console.log('🔄 수량 변경 이벤트 발생:', newQuantity); // 디버깅 로그
     emit('update-quantity', newQuantity);
 };
 
-// ✅ 개별 상품 제거 (API 요청)
+// 개별 상품 제거 (API 요청)
 const removeItem = async () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
         await cartApi.removeItem(authStore.userId, props.itemId);
-        emit('remove-item'); // 상위 컴포넌트에 삭제 이벤트 전달
+        emit('remove-item', props.itemId);
     } catch (error) {
         alert('상품 삭제에 실패했습니다.');
     }

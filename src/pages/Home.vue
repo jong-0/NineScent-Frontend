@@ -1,32 +1,34 @@
 <!-- Home.vue -->
 <template>
   <div class="home">
-    <main class="main">
-      <section class="hero">
-        <h1>Discover the Perfect Fragrance</h1>
-        <p>Your journey to elegance starts here.</p>
-        <button class="shop-now">Shop Now</button>
-      </section>
-      <section class="featured-products">
-        <h2>Featured Products</h2>
-        <div class="product-list">
-          <div
-            v-for="product in featuredProducts"
-            :key="product.id"
-            class="product-item"
-            @click="goToDetail(product.id)"
-          >
-            <img :src="product.image" :alt="product.name" />
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.price }}</p>
-          </div>
+    <section
+      class="hero"
+      :style="{ backgroundImage: `url(${mainImg1})` }"
+    >
+      <!-- <h2>Perfect Fragrance</h2> -->
+      <p>Your journey to elegance starts here with us.</p>
+      <button class="shop-now">Shop Now</button>
+    </section>
+    <section class="featured-products">
+      <h2>Featured Products</h2>
+      <div class="product-list">
+        <div
+          v-for="product in featuredProducts"
+          :key="product.id"
+          class="product-item"
+          @click="goToDetail(product.id)"
+        >
+          <img :src="product.image" :alt="product.name" />
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.price }}</p>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
+import mainImg1 from '@/assets/images/mainImg.jpeg';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -71,9 +73,13 @@ const featuredProducts = [
 }
 
 .hero {
+  min-height: 750px;
   text-align: center;
-  padding: 50px 20px;
+  padding: 30px 20px;
   background-color: #ececec;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .hero h1 {
@@ -87,11 +93,12 @@ const featuredProducts = [
 
 .shop-now {
   padding: 10px 20px;
-  background-color: #333;
-  color: #fff;
+  background-color: #f7f6f0;
+  color: #333;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
+  margin-top: 10px;
 }
 
 .featured-products {

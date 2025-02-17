@@ -1,46 +1,96 @@
 <template>
-  <div>NewTestCheckout</div>
+  <div class="container mt-5">
+    <h5 class="mb-4 text-center">주문서</h5>
 
-  <!-- 카트 주문 -->
-  <div v-if="orderType === 'cart' && cartData">
-    <h2>카트 주문 상품 목록</h2>
-    <ul>
-      <li
-        v-for="item in cartData.cartItems"
-        :key="item.cartItemId"
-      >
-        {{ item.itemName }} - {{ item.quantity }}개
-      </li>
-    </ul>
-  </div>
-  <!-- 개별 상품 주문 -->
-  <div v-else-if="orderType === 'item' && itemData">
-    <h2>개별 상품 주문</h2>
-    <p>상품명: {{ itemData.itemName }}</p>
-    <p>가격: {{ itemData.price }}원</p>
-  </div>
-  <div v-else>
-    <p>불러올 수 있는 주문 정보가 없습니다.</p>
-  </div>
-  <div v-if="addressData && addressData.addrAddress">
-    <h2>기본 배송 주소</h2>
-    <p>{{ addressData.addrName }}</p>
-    <p>{{ addressData.addrAddress }}</p>
-    <p>{{ addressData.addrDetail }}</p>
-    <p>{{ addressData.addrContact }}</p>
-    <button @click="goToAddressPage(userNo)">
-      배송지 변경
-    </button>
-  </div>
-  <!-- 결제 금액 -->
-  <div class="total-price" v-if="finalPrice > 0">
-    <h2>결제 금액</h2>
-    <p>총 결제 금액: {{ finalPrice }}원</p>
-  </div>
+    <div class="row gx-5">
+      <!-- 주문 상품 목록 -->
+      <div class="col-12 col-lg-8">
+        <template v-if="orderType === 'cart' && cartData">
+          <h6 class="mb-3">장바구니 상품</h6>
+          <ul class="cart-item-list">
+            <li
+              v-for="item in cartData"
+              :key="item.itemId"
+              class="cart-item"
+            >
+              <img
+                :src="item.thumbSrc"
+                alt="상품 이미지"
+                class="product-image"
+              />
+              <div class="item-details">
+                <p class="item-name">{{ item.title }}</p>
+                <p class="item-price">
+                  {{ item.price }}원 × {{ item.quantity }}개
+                </p>
+              </div>
+            </li>
+          </ul>
+        </template>
 
-  <!-- 결제 버튼 -->
-  <div>
-    <button @click="onPayment">결제하기</button>
+        <template
+          v-else-if="orderType === 'item' && itemData"
+        >
+          <h6 class="mb-3">구매 상품</h6>
+          <div class="single-item">
+            <img
+              :src="itemData.mainPhoto"
+              alt="상품 이미지"
+              class="product-image"
+            />
+            <div class="item-details">
+              <p class="item-name">
+                {{ itemData.itemName }}
+              </p>
+              <p class="item-price">
+                {{ itemData.price }}원 ×
+                {{ itemData.quantity }}개
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <div v-else class="text-center text-muted py-4">
+          <p>주문할 상품이 없습니다.</p>
+        </div>
+      </div>
+      <!-- 배송지 및 결제 정보 -->
+      <div class="col-12 col-lg-4 mt-4 mt-lg-0">
+        <h6 class="mb-3">배송 정보</h6>
+        <div v-if="addressData" class="address-info">
+          <p>
+            <strong>{{ addressData.addrName }}</strong>
+          </p>
+          <p>
+            {{ addressData.addrAddress }}
+            {{ addressData.addrDetail }}
+          </p>
+          <p>{{ addressData.addrContact }}</p>
+          <button
+            class="change-address-btn"
+            @click="goToAddressPage(userNo)"
+          >
+            배송지 변경
+          </button>
+        </div>
+        <!-- 결제 요약 -->
+        <h6 class="mt-4">결제 금액</h6>
+        <div class="order-summary">
+          <p>
+            주문 금액: <strong>{{ finalPrice }}원</strong>
+          </p>
+          <p>
+            배송비: <strong>{{ shippingCost }}원</strong>
+          </p>
+          <p>
+            총 금액: <strong>{{ totalAmount }}원</strong>
+          </p>
+        </div>
+        <button class="checkout-btn" @click="onPayment">
+          결제하기
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -50,20 +100,27 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
 const cartData = ref(null);
 const itemData = ref(null);
 const addressData = ref(null);
 const orderType = sessionStorage.getItem('orderType');
 const userNo = sessionStorage.getItem('userNo'); // 세션에서 가져오기
+const shippingCost = ref(0);
 
 const fetchOrderData = () => {
   if (orderType === 'cart') {
     const storedCart = sessionStorage.getItem('cartData');
-    console.log(storedCart);
+    const storedShippingCost =
+      sessionStorage.getItem('shippingCost');
+    shippingCost.value = storedShippingCost
+      ? Number(storedShippingCost)
+      : 0;
 
     cartData.value = storedCart
       ? JSON.parse(storedCart)
       : null;
+    console.log('cartData:', cartData);
   } else if (orderType === 'item') {
     const storedItem = sessionStorage.getItem('itemData');
     console.log(storedItem);
@@ -100,18 +157,30 @@ const fetchAddressData = async () => {
     sessionStorage.removeItem('selectedAddress');
   }
 };
-// 총 결제 금액 계산
+// 총 결제 금액 (상품 가격 합산)
 const finalPrice = computed(() => {
-  if (orderType === 'cart' && cartData.value) {
-    return cartData.value.cartItems.reduce(
-      (sum, item) => sum + item.quantity * item.price,
+  if (
+    orderType === 'cart' &&
+    Array.isArray(cartData.value)
+  ) {
+    return cartData.value.reduce(
+      (sum, item) =>
+        sum + (item.quantity || 1) * (item.price || 0),
       0
     );
   } else if (orderType === 'item' && itemData.value) {
-    return itemData.value.price;
+    return (
+      (itemData.value.price || 0) *
+      (itemData.value.quantity || 1)
+    );
   }
   return 0;
 });
+
+// 총 결제 금액 (배송비 포함)
+const totalAmount = computed(
+  () => finalPrice.value + shippingCost.value
+);
 
 const goToAddressPage = () => {
   router.push({ name: 'Address', params: { userNo } });
@@ -122,7 +191,7 @@ onMounted(() => {
   fetchAddressData();
 });
 
-// 결제 처리 함수
+// ✅ 결제 처리 함수 (수정된 코드)
 const onPayment = () => {
   /* 1. 가맹점 식별하기 */
   const { IMP } = window;
@@ -139,7 +208,7 @@ const onPayment = () => {
     pg: 'nice', // PG사
     pay_method: 'card', // 결제수단
     merchant_uid: `mid_${new Date().getTime()}`, // 주문번호
-    amount: finalPrice.value, // 결제금액
+    amount: totalAmount.value, // 결제금액
     name: '주문 상품 결제', // 주문명
     buyer_name: addressData.value?.addrName || '이름 없음', // 구매자 이름
     buyer_tel:
@@ -155,56 +224,161 @@ const onPayment = () => {
   IMP.request_pay(data, callbackPayment);
 };
 
-/* 결제 결과 콜백 함수 */
-const callbackPayment = async (response) => {
+/* ✅ 결제 결과 콜백 함수 (불필요한 호출 제거) */
+const callbackPayment = (response) => {
   const { success, error_msg } = response;
 
   if (success) {
     alert('결제 성공');
-
-    // 결제 성공 후 백엔드에 주문 정보 저장
-    const orderData = {
-      userNo: userNo,
-      addressNo: addressData.value?.addrNo,
-      orderItems: [
-        {
-          itemId: itemData.value?.itemId,
-          quantity: itemData.value?.quantity || 1,
-          originalPrice: itemData.value?.originalPrice || 0,
-          discountedPrice:
-            itemData.value?.discountedPrice ||
-            itemData.value?.originalPrice ||
-            0,
-        },
-      ],
-      paymentDone: true,
-    };
-
-    console.log('**********orderData', orderData);
-
-    try {
-      const orderResponse = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!orderResponse.ok)
-        throw new Error('주문 저장 실패');
-
-      const orderResult = await orderResponse.json();
-      const orderId = orderResult.orderId; // 저장된 주문 ID 가져오기
-
-      // 주문 상세 페이지로 이동 (에러 해결)
-      router.replace({
-        name: 'OrderDetail',
-        params: { orderId },
-      });
-    } catch (error) {
-      alert('주문 저장 실패: ' + error.message);
-    }
+    router.replace({ name: 'OrderComplete' }); // 결제 완료 페이지로 이동
   } else {
     alert(`결제 실패: ${error_msg}`);
+    return; // ✅ 취소 시 추가 동작 방지
   }
 };
 </script>
+
+<style scoped>
+/* 전체 컨테이너 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 주문 상품 목록 */
+.cart-item-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.cart-item,
+.single-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* 상품 이미지 */
+.product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+/* 상품 정보 */
+.item-details {
+  flex-grow: 1;
+}
+
+.item-name {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.item-price {
+  font-size: 13px;
+  color: #777;
+}
+
+/* 배송 정보 */
+.address-info {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.change-address-btn {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.change-address-btn:hover {
+  background-color: #333;
+}
+
+/* 주문 요약 */
+.order-summary {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.order-summary p {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+/* 결제 버튼 */
+.checkout-btn {
+  width: 100%;
+  background-color: #ff6600;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background-color 0.2s;
+}
+
+.checkout-btn:hover {
+  background-color: #cc5200;
+}
+
+/* ✅ 반응형 디자인 */
+@media (max-width: 992px) {
+  .row {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .col-12 {
+    width: 100%;
+  }
+
+  .col-lg-8,
+  .col-lg-4 {
+    width: 100%;
+  }
+
+  .cart-item,
+  .single-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-image {
+    width: 100%;
+    height: auto;
+    max-width: 250px;
+  }
+
+  .item-details {
+    text-align: center;
+    width: 100%;
+  }
+
+  .address-info {
+    text-align: center;
+  }
+
+  .change-address-btn,
+  .checkout-btn {
+    width: 100%;
+  }
+}
+</style>

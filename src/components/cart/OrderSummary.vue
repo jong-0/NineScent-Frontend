@@ -24,36 +24,53 @@
             <h5>{{ formattedFinalTotal }} 원</h5>
         </div>
 
-        <!-- 구매하기 버튼 -->
-        <!-- <button class="btn btn-success w-100 mt-4">구매하기 ({{ itemCount }})</button> -->
-
         <!-- 주문 버튼 -->
         <div class="order-buttons">
-            <button class="selected-order" @click="$emit('order-selected')">선택 주문 ({{ itemCount }})</button>
+            <button class="selected-order" @click="$emit('order-selected')">선택 주문 ({{ selectedItemCount }})</button>
             <button class="all-order" @click="$emit('order-all')">전체 주문</button>
         </div>
     </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watchEffect } from 'vue';
 
-// ✅ Props로 전달받는 데이터
+//   Props로 전달받는 데이터
 const props = defineProps({
-    totalPrice: { type: Number, required: true }, // 총 상품 금액
-    totalDiscount: { type: Number, required: true }, // 총 할인 금액
+    cartProducts: { type: Array, required: true }, // 장바구니 상품 목록
     shippingCost: { type: Number, default: 0 }, // 배송비
-    itemCount: { type: Number, required: true }, // 선택된 상품 수
 });
 
-// ✅ 최종 결제 금액 계산
-const finalTotal = computed(() => props.totalPrice - props.totalDiscount + props.shippingCost);
+//   선택된 상품만 필터링
+const selectedProducts = computed(() => props.cartProducts.filter((product) => product.selected));
 
-// ✅ 통화 형식 변환
-const formattedTotalPrice = computed(() => props.totalPrice.toLocaleString());
-const formattedTotalDiscount = computed(() => props.totalDiscount.toLocaleString());
+//   선택된 상품 개수
+const selectedItemCount = computed(() => selectedProducts.value.length);
+
+//   선택된 상품만 반영한 총 상품 금액 (subtotal)
+const subtotal = computed(() => selectedProducts.value.reduce((acc, product) => acc + product.price * product.quantity, 0));
+
+//   선택된 상품만 반영한 총 할인 금액 (totalDiscount)
+const totalDiscount = computed(() => selectedProducts.value.reduce((acc, product) => acc + product.discount * product.quantity, 0));
+
+//   선택된 상품만 반영한 최종 결제 금액
+const finalTotal = computed(() => subtotal.value - totalDiscount.value + props.shippingCost);
+
+//   통화 형식 변환
+const formattedTotalPrice = computed(() => subtotal.value.toLocaleString());
+const formattedTotalDiscount = computed(() => totalDiscount.value.toLocaleString());
 const formattedShipping = computed(() => props.shippingCost.toLocaleString());
 const formattedFinalTotal = computed(() => finalTotal.value.toLocaleString());
+
+//   변경 사항 감지 및 디버깅 로그 출력
+watchEffect(() => {
+    console.log('🛒 선택된 상품만 반영된 OrderSummary 업데이트:', {
+        선택된상품수: selectedItemCount.value,
+        선택된상품총금액: subtotal.value,
+        선택된상품총할인: totalDiscount.value,
+        최종결제금액: finalTotal.value,
+    });
+});
 </script>
 
 <style scoped>
