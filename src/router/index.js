@@ -3,19 +3,23 @@ import { useAuthStore } from '@/stores/authStore';
 
 import ItemDetail from '@/pages/Item/ItemDetail.vue';
 import Home from '@/pages/Home.vue';
+import Login from '@/pages/member/Login.vue';
+import Signup from '@/pages/member/Signup.vue';
+import FindId from '@/pages/member/FindId.vue';
+import FindPw from '@/pages/member/FindPw.vue';
+
 import Checkout from '@/pages/Checkout.vue';
 import Address from '@/pages/Address.vue';
 import AddAddress from '@/pages/AddAddress.vue';
 import UpdateAddress from '@/pages/UpdateAddress.vue';
 import CSCenter from '@/pages/CSCenter.vue';
 import AddFaq from '@/pages/AddFaq.vue';
-import Login from '@/pages/Login.vue';
-import Signup from '@/pages/Signup.vue';
+
 import MyPage from '@/pages/MyPage.vue';
 // import Category from '@/pages/Category.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
 import Cart from '@/pages/CartPage.vue';
-// import OrderComplete from '@/pages/OrderComplete.vue';
+import OrderComplete from '@/pages/OrderComplete.vue';
 
 const routes = [
   // { path: '/category/:id', component: Category },
@@ -44,46 +48,66 @@ const routes = [
     component: Signup,
   },
 
-  {
-    path: '/cart',
-    name: 'Cart',
-    component: Cart,
-  },
-  {
-    path: '/checkout',
-    name: 'Checkout',
-    component: Checkout,
-  },
-  {
-    path: '/address/:userNo',
-    name: 'Address',
-    component: Address,
-  },
-  {
-    path: '/addaddress',
-    name: 'AddAddress',
-    component: AddAddress,
-  },
-  {
-    path: '/updateaddress/:addrNo',
-    name: 'UpdateAddress',
-    component: UpdateAddress,
-  },
-  {
-    path: '/cscenter',
-    name: 'CSCenter',
-    component: CSCenter,
-  },
-  {
-    path: '/faq/add',
-    name: 'AddFaq',
-    component: AddFaq,
-  },
-  {
-    path: '/faq/update/:faqId',
-    name: 'UpdateFaq',
-    component: AddFaq,
-  },
+
+    {
+        path: '/findId',
+        name: 'FindId',
+        component: FindId,
+    },
+
+    {
+        path: '/findPw',
+        name: 'FindPw',
+        component: FindPw,
+    },
+    {
+        path: '/cart',
+        name: 'Cart',
+        component: Cart,
+    },
+    {
+        path: '/checkout',
+        name: 'Checkout',
+        component: Checkout,
+    },
+
+    {
+        path: '/complete',
+        name: 'OrderComplete',
+        component: OrderComplete,
+    },
+
+    {
+        path: '/address/:userNo',
+        name: 'Address',
+        component: Address,
+    },
+    {
+        path: '/addaddress',
+        name: 'AddAddress',
+        component: AddAddress,
+    },
+    {
+        path: '/updateaddress/:addrNo',
+        name: 'UpdateAddress',
+        component: UpdateAddress,
+    },
+    {
+        path: '/cscenter',
+        name: 'CSCenter',
+        component: CSCenter,
+    },
+    {
+        path: '/faq/add',
+        name: 'AddFaq',
+        component: AddFaq,
+    },
+    {
+        path: '/faq/update/:faqId',
+        name: 'UpdateFaq',
+        component: AddFaq,
+    },
+
 
   {
     path: '/mypage/:id',

@@ -72,16 +72,16 @@ export const useAuthStore = defineStore('auth', {
             const userId = localStorage.getItem('userId');
             const userNo = localStorage.getItem('userNo');
             const userName = localStorage.getItem('userName');
-            const email = localStorage.getItem('email'); // ✅ email 가져오기
+            const email = localStorage.getItem('email'); //   email 가져오기
             const role = localStorage.getItem('role');
 
             if (token && userId && userNo && userName && email) {
-                // ✅ email도 확인
+                //   email도 확인
                 this.token = token;
                 this.userId = userId;
                 this.userNo = userNo;
                 this.userName = userName;
-                this.email = email; // ✅ email 저장
+                this.email = email; //   email 저장
                 this.role = role;
                 this.isAuthenticated = true;
             }

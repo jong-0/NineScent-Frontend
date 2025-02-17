@@ -27,7 +27,7 @@
                         <hr v-if="index !== 0" class="horizontal dark my-3" />
                         <ProductCartItem
                             :itemId="product.itemId"
-                            :thumbSrc="product.thumbSrc"
+                            :imageUrl="product.imageUrl"
                             :thumbAlt="product.thumbAlt"
                             :title="product.title"
                             :color="product.color"
@@ -50,7 +50,8 @@
 
             <!-- 주문 요약 -->
             <div class="col-12 col-lg-4 mt-4 mt-lg-0">
-                <OrderSummary
+                <OrderSummary :cartProducts="cartProducts" :shippingCost="shipping" :itemCount="selectedItemCount" @order-selected="orderSelected" @order-all="orderAll" />
+                <!-- <OrderSummary
                     :totalPrice="subtotal"
                     :totalDiscount="totalDiscount"
                     :shippingCost="shipping"
@@ -58,25 +59,28 @@
                     :cartProducts="cartProducts"
                     @order-selected="orderSelected"
                     @order-all="orderAll"
-                />
+                /> -->
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { cartApi } from '@/api/cartApi';
 import { useAuthStore } from '@/stores/authStore';
+import _ from 'lodash';
+
 import ProductCartItem from '../components/cart/ProductCartItem.vue';
 import OrderSummary from '../components/cart/OrderSummary.vue';
 
 const authStore = useAuthStore();
 
-// ✅ 장바구니 데이터 (샘플 데이터)
+//   장바구니 데이터 (샘플 데이터)
 const cartProducts = ref([
     {
-        thumbSrc: new URL('../assets/images/product1.jpg', import.meta.url).href,
+        itemId: 1,
+        imageUrl: new URL('../assets/images/product1.jpg', import.meta.url).href,
         thumbAlt: 'Product 1',
         title: 'Classic T-Shirt',
         color: 'Black',
@@ -88,7 +92,8 @@ const cartProducts = ref([
         selected: false,
     },
     {
-        thumbSrc: new URL('../assets/images/product2.jpg', import.meta.url).href,
+        itemId: 2,
+        imageUrl: new URL('../assets/images/product2.jpg', import.meta.url).href,
         thumbAlt: 'Product 2',
         title: 'Denim Jacket',
         color: 'Blue',
@@ -101,10 +106,10 @@ const cartProducts = ref([
     },
 ]);
 
-// ✅ 장바구니 데이터 (백엔드 연동)
+//   장바구니 데이터 (백엔드 연동)
 // const cartProducts = ref([]);
 
-// ✅ 장바구니 불러오기
+//   장바구니 불러오기
 const loadCart = async () => {
     try {
         const response = await cartApi.getCart(authStore.userNo);
@@ -118,19 +123,19 @@ const loadCart = async () => {
             stock: item.stock,
             quantity: item.quantity,
             discount: item.discount,
-            selected: true, // 기본적으로 선택되지 않음
+            selected: true,
         }));
     } catch (error) {
         console.error('장바구니 데이터를 불러오는 중 오류 발생:', error);
     }
 };
 
-// ✅ 페이지 로딩 시 장바구니 불러오기
+//  페이지 로딩 시 장바구니 불러오기
 onMounted(() => {
     loadCart();
 });
 
-// ✅ 전체 선택 상태
+//  전체 선택 상태
 const isAllSelected = computed({
     get: () => cartProducts.value.length > 0 && cartProducts.value.every((product) => product.selected),
     set: (value) => {
@@ -138,42 +143,52 @@ const isAllSelected = computed({
     },
 });
 
-// ✅ 선택된 상품 개수
+//  선택된 상품 개수
 const selectedItemCount = computed(() => cartProducts.value.filter((product) => product.selected).length);
 
-// ✅ 총 상품 금액 계산 (선택된 상품만)
+// 총 상품 금액 계산 (선택된 상품만)
 const subtotal = computed(() => cartProducts.value.filter((product) => product.selected).reduce((acc, product) => acc + product.price * product.quantity, 0));
-
-// ✅ 총 할인 금액 계산 (선택된 상품만)
+//  총 할인 금액 계산 (선택된 상품만)
 const totalDiscount = computed(() => cartProducts.value.filter((product) => product.selected).reduce((acc, product) => acc + product.discount * product.quantity, 0));
 
-// ✅ 배송비 계산 (10만 원 이상 무료 배송)
+// 배송비 계산 (10만 원 이상 무료 배송)
 const shipping = computed(() => (subtotal.value >= 100000 ? 0 : 3000));
 
-// ✅ 선택된 상품 삭제
-// function removeSelectedItems() {
-//     cartProducts.value = cartProducts.value.filter((product) => !product.selected);
-// }
-
-// ✅ 개별 상품 선택 상태 업데이트
+//  개별 상품 선택 상태 업데이트
 function updateSelected(index, isSelected) {
     cartProducts.value[index].selected = isSelected;
 }
 
-// ✅ 수량 업데이트 (프론트 + 백엔드 동기화)
-const updateQuantity = async (index, itemId, newQuantity) => {
-    // 1. 프론트 단에서 즉시 반영
-    cartProducts.value[index].quantity = Math.max(1, parseInt(newQuantity, 10) || 1);
-
-    // 2. 백엔드 업데이트 요청
+// 디바운싱을 적용한 API 요청 함수(300ms 지연)
+const debouncedUpdateQuantity = _.debounce(async (index, itemId, newQuantity) => {
     try {
-        await cartApi.updateItem(authStore.userId, itemId, cartProducts.value[index].quantity);
+        console.log('🚀 API 요청 실행: itemId -', itemId, '수량-', newQuantity);
+        await cartApi.updateItem(authStore.userId, itemId, newQuantity);
     } catch (error) {
-        console.error('수량 변경 실패:', error);
+        console.error('❌ 수량 변경 API 요청 실패:', error);
     }
+}, 300); // ✅ 사용자가 300ms 동안 입력을 멈춘 후에만 실행됨
+
+//  수량 업데이트 (프론트 + 백엔드 동기화)
+const updateQuantity = async (index, itemId, newQuantity) => {
+    console.log('🛠 수량 변경 감지:', newQuantity);
+    // 변경 사항을 감지할 수 있도록 새로운 객체를 생성하여 대입
+    cartProducts.value[index] = { ...cartProducts.value[index], quantity: newQuantity };
+
+    // Vue가 변경 사항을 감지할 수 있도록 배열을 완전히 새로 대입
+    cartProducts.value = [...cartProducts.value];
+
+    // ✅ API 호출 (디바운싱 적용)
+    debouncedUpdateQuantity(index, itemId, newQuantity);
+
+    // try {
+    //     await cartApi.updateItem(authStore.userId, itemId, quantity);
+    // } catch (error) {
+    //     console.error('수량 변경 실패:', error);
+    // }
 };
 
-// ✅ 개별 상품 제거 (백엔드 연동)
+//  개별 상품 제거
 const removeItem = async (itemId) => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
@@ -185,7 +200,7 @@ const removeItem = async (itemId) => {
     }
 };
 
-// ✅ 선택된 상품 삭제
+//  선택된 상품 삭제
 const removeSelectedItems = async () => {
     const selectedItems = cartProducts.value.filter((product) => product.selected);
     if (selectedItems.length === 0) {
@@ -205,7 +220,7 @@ const removeSelectedItems = async () => {
     }
 };
 
-// ✅ 선택 주문 (선택된 상품만 주문)
+//   선택 주문 (선택된 상품만 주문)
 function orderSelected() {
     const selectedItems = cartProducts.value.filter((product) => product.selected);
     if (selectedItems.length === 0) {
@@ -215,7 +230,7 @@ function orderSelected() {
     }
 }
 
-// ✅ 전체 주문 (모든 상품 주문)
+//   전체 주문 (모든 상품 주문)
 function orderAll() {
     if (cartProducts.value.length === 0) {
         alert('장바구니가 비어 있습니다.');
@@ -223,6 +238,14 @@ function orderAll() {
         alert('전체 상품 주문: ' + JSON.stringify(cartProducts.value));
     }
 }
+
+watch(
+    cartProducts,
+    () => {
+        console.log('장바구니 데이터 변경 감지', cartProducts.value);
+    },
+    { deep: true }
+);
 </script>
 
 <style scoped>
