@@ -77,13 +77,16 @@
         <h6 class="mt-4">결제 금액</h6>
         <div class="order-summary">
           <p>
-            주문 금액: <strong>{{ finalPrice }}원</strong>
+            주문 금액:
+            <strong>{{ totalProductPrice }}원</strong>
           </p>
+          <p>할인 금액: <strong>{{}}</strong></p>
           <p>
             배송비: <strong>{{ shippingCost }}원</strong>
           </p>
           <p>
-            총 금액: <strong>{{ totalAmount }}원</strong>
+            총 금액:
+            <strong>{{ finalTotalAmount }}원</strong>
           </p>
         </div>
         <button class="checkout-btn" @click="onPayment">
@@ -99,13 +102,17 @@ import addressApi from '@/api/addressApi';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { useAuthStore } from '@/stores/authStore';
+import { result } from 'lodash';
+const authStore = useAuthStore();
+
 const router = useRouter();
 
 const cartData = ref(null);
 const itemData = ref(null);
 const addressData = ref(null);
 const orderType = sessionStorage.getItem('orderType');
-const userNo = sessionStorage.getItem('userNo'); // 세션에서 가져오기
+const userNo = authStore.userNo; // authStore에서 가져오기
 const shippingCost = ref(0);
 
 const fetchOrderData = () => {
@@ -134,7 +141,6 @@ const fetchOrderData = () => {
 const fetchAddressData = async () => {
   // 기본 주소 불러오기 (새로운 주문 시)
   if (!userNo) return;
-
   const defaultResponse =
     await addressApi.getAddressDefault(userNo);
   addressData.value = defaultResponse;
@@ -157,8 +163,8 @@ const fetchAddressData = async () => {
     sessionStorage.removeItem('selectedAddress');
   }
 };
-// 총 결제 금액 (상품 가격 합산)
-const finalPrice = computed(() => {
+// 총 상품 금액 (배송비 전)
+const totalProductPrice = computed(() => {
   if (
     orderType === 'cart' &&
     Array.isArray(cartData.value)
@@ -178,9 +184,27 @@ const finalPrice = computed(() => {
 });
 
 // 총 결제 금액 (배송비 포함)
-const totalAmount = computed(
-  () => finalPrice.value + shippingCost.value
+const finalTotalAmount = computed(
+  () => totalProductPrice.value + shippingCost.value
 );
+// 총 할인 금액
+const totalDiscount = computed(() => {
+  if (
+    orderType === 'cart' &&
+    Array.isArray(cartData.value)
+  ) {
+    return cartData.value.reduce(
+      (sum, item) => sum + item.discount * item.quantity,
+      0
+    );
+  } else if (orderType === 'item' && itemData.value) {
+    return (
+      (itemData.value.discount || 0) *
+      (itemData.value.quantity || 1)
+    );
+  }
+  return 0;
+});
 
 const goToAddressPage = () => {
   router.push({ name: 'Address', params: { userNo } });
@@ -208,16 +232,12 @@ const onPayment = () => {
     pg: 'nice', // PG사
     pay_method: 'card', // 결제수단
     merchant_uid: `mid_${new Date().getTime()}`, // 주문번호
-    amount: totalAmount.value, // 결제금액
+    amount: finalTotalAmount.value, // 결제금액
     name: '주문 상품 결제', // 주문명
     buyer_name: addressData.value?.addrName || '이름 없음', // 구매자 이름
     buyer_tel:
       addressData.value?.addrContact || '010-0000-0000', // 구매자 전화번호
     buyer_email: 'example@example.com', // 구매자 이메일 (데이터 추가 가능)
-    buyer_addr:
-      addressData.value?.addrAddress || '주소 없음', // 구매자 주소
-    buyer_postcode:
-      addressData.value?.addrZipcode || '00000', // 구매자 우편번호
   };
 
   /* 3. 결제 창 호출 */
@@ -225,15 +245,70 @@ const onPayment = () => {
 };
 
 /* ✅ 결제 결과 콜백 함수 (불필요한 호출 제거) */
-const callbackPayment = (response) => {
+const callbackPayment = async (response) => {
   const { success, error_msg } = response;
 
   if (success) {
-    alert('결제 성공');
+    alert('결제가 완료되었습니다.');
+    await saveOrder(); // 결제 성공 후 주문 저장
     router.replace({ name: 'OrderComplete' }); // 결제 완료 페이지로 이동
   } else {
     alert(`결제 실패: ${error_msg}`);
     return; // ✅ 취소 시 추가 동작 방지
+  }
+};
+
+// 주문 저장 api 호출
+const saveOrder = async () => {
+  try {
+    const orderData = {
+      userNo: Number(userNo),
+      addressNo: addressData.value.addrNo,
+      paymentDone: true,
+      orderItems:
+        orderType === 'cart'
+          ? cartData.value.map((item) => ({
+              itemId: item.itemId,
+              quantity: item.quantity,
+              originalPrice: item.price,
+              discountedPrice:
+                item.price - (item.discount || 0),
+            }))
+          : [
+              {
+                itemId: itemData.value.itemId,
+                quantity: itemData.value.quantity,
+                originalPrice: itemData.value.price,
+                discountedPrice:
+                  itemData.value.price -
+                  (itemData.value.discount || 0),
+              },
+            ],
+      totalPrice: totalProductPrice.value,
+      totalDiscount: totalDiscount.value,
+      finalAmount: finalTotalAmount.value,
+      shippingFee: shippingCost.value,
+    };
+    console.log('****주문데이터', orderData);
+
+    const response = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+    });
+    if (!response.ok) {
+      throw new Error('주문 저장 실패');
+    }
+
+    // 주문 완료 페이지로 이동
+    router.replace({
+      name: 'OrderComplete',
+      params: { orderId: result.orderId },
+    });
+  } catch (error) {
+    console.log('주문 저장 오류 발생', error);
+
+    alert('주문 저장에 실패했습니다. 다시 시도해 주세요');
   }
 };
 </script>
