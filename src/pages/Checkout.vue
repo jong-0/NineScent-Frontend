@@ -130,6 +130,11 @@ const fetchOrderData = () => {
     console.log('cartData:', cartData);
   } else if (orderType === 'item') {
     const storedItem = sessionStorage.getItem('itemData');
+    const storedShippingCost =
+      sessionStorage.getItem('shippingCost');
+    shippingCost.value = storedShippingCost
+      ? Number(storedShippingCost)
+      : 0;
     console.log(storedItem);
 
     itemData.value = storedItem
