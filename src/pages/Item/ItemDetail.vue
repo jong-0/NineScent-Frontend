@@ -52,20 +52,39 @@
           <button @click="increaseQuantity">+</button>
         </div>
 
-        <div class="total-price">
+        <div class="price-summary">
+          <div class="total-price">
+            <span>총 상품금액</span>
+            <span class="price"
+              >{{ formatPrice(finalProductPrice) }}원</span
+            >
+          </div>
+          <div class="total-price shipping-cost">
+            <span>배송비</span>
+            <span :class="{ free: shippingCost === 0 }">
+              {{
+                shippingCost === 0
+                  ? '무료배송'
+                  : formatPrice(shippingCost) + '원'
+              }}
+            </span>
+          </div>
+        </div>
+        <!-- <div class="total-price">
           <span>총 상품금액</span>
           <span
-            >{{
-              formatPrice(calculateTotalPrice())
-            }}원</span
+            >{{ formatPrice(finalProductPrice) }}원</span
           >
         </div>
-
+        <div class="shipping-cost">
+          <span>배송비</span>
+          <span>{{ formatPrice(shippingCost) }}원</span>
+        </div> -->
         <div class="action-buttons">
           <button class="buy-now" @click="buyNow()">
             바로구매
           </button>
-          <button class="add-to-cart" @click="addToCart()">
+          <button class="add-to-cart" @click="addToCart">
             장바구니
           </button>
         </div>
@@ -153,7 +172,6 @@
             </div>
           </div>
         </div>
-        -->
 
         <!-- Q&A 섹션 -->
         <!-- <div v-if="currentTab === 'qna'" class="qna">
@@ -190,7 +208,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Review from '@/components/qnareview/Review.vue';
 import Qna from '@/components/qnareview/Qna.vue';
 import itemApi from '@/api/itemApi';
-
+import { useAuthStore } from '@/stores/authStore';
 export default {
   name: 'ProductDetail',
   components: {
@@ -201,7 +219,9 @@ export default {
   setup() {
     const route = useRoute();
     const router = useRouter();
-    return { route, router };
+    const authStore = useAuthStore();
+    const userNo = authStore.userNo;
+    return { route, router, userNo };
   },
 
   data() {
@@ -267,20 +287,9 @@ export default {
       );
       return (sum / this.reviews.length).toFixed(1);
     },
-  },
-
-  methods: {
-    formatPrice(price) {
-      return price.toLocaleString();
-    },
-
-    formatDate(date) {
-      return new Date(date).toLocaleDateString();
-    },
-
-    calculateTotalPrice() {
+    // ✅ 개별 상품의 최종 가격 계산 (옵션 포함)
+    finalProductPrice() {
       let basePrice = this.product.price;
-      // Add additional option prices
       Object.entries(this.selectedOptions).forEach(
         ([optionId, choiceId]) => {
           const option = this.product.options.find(
@@ -297,6 +306,40 @@ export default {
       return basePrice * this.quantity;
     },
 
+    // ✅ 개별 상품 배송비 계산 (10만 원 이상 무료 배송)
+    shippingCost() {
+      return this.finalProductPrice >= 100000 ? 0 : 3000;
+    },
+  },
+
+  methods: {
+    formatPrice(price) {
+      return price.toLocaleString();
+    },
+
+    formatDate(date) {
+      return new Date(date).toLocaleDateString();
+    },
+
+    // calculateTotalPrice() {
+    //   let basePrice = this.product.price;
+    //   // Add additional option prices
+    //   Object.entries(this.selectedOptions).forEach(
+    //     ([optionId, choiceId]) => {
+    //       const option = this.product.options.find(
+    //         (opt) => opt.id === optionId
+    //       );
+    //       const choice = option.choices.find(
+    //         (c) => c.id === choiceId
+    //       );
+    //       if (choice) {
+    //         basePrice += choice.additionalPrice;
+    //       }
+    //     }
+    //   );
+    //   return basePrice * this.quantity;
+    // },
+
     increaseQuantity() {
       this.quantity++;
     },
@@ -308,14 +351,11 @@ export default {
     },
 
     async addToCart() {
-      const userNo = sessionStorage.getItem('userNo'); // 세션에서 가져오기
+      const userNo = this.userNo;
       try {
         const cartItemDTO = {
           itemId: this.product.id,
           quantity: this.quantity,
-          itemName: this.product.name,
-          isSelected: true,
-          // action: 'set',
         };
 
         const response = await fetch(
@@ -326,10 +366,16 @@ export default {
             body: JSON.stringify(cartItemDTO),
           }
         );
-        alert('장바구니에 추가되었습니다');
-
         if (!response.ok)
           throw new Error('장바구니 추가 실패');
+
+        // 장바구니 추가 성공 후 알림창
+        const goToCart = confirm(
+          '장바구니에 추가되었습니다. 장바구니로 이동하시겠습니까?'
+        );
+        if (goToCart) {
+          this.$router.push({ name: 'Cart' });
+        }
       } catch (error) {
         console.error('Error add to cart', error);
       }
@@ -355,6 +401,11 @@ export default {
           'itemData',
           JSON.stringify(itemData)
         );
+        sessionStorage.setItem(
+          'shippingCost',
+          this.shippingCost
+        );
+
         // 페이지 이동
         this.$router.push({ name: 'Checkout' });
       } catch (error) {
@@ -485,14 +536,35 @@ export default {
   margin: 0 5px;
 }
 
+.price-summary {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
 .total-price {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin: 30px 0;
-  padding: 20px 0;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+
+.total-price span {
+  font-weight: 500;
+}
+
+.total-price .price {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.shipping-cost span {
+  color: #ff5a5f;
+}
+
+.shipping-cost .free {
+  color: #2ecc71; /* 무료배송일 때 강조 */
+  font-weight: 600;
 }
 
 .action-buttons {
