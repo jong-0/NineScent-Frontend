@@ -26,6 +26,8 @@ import MyPage from '@/pages/MyPage.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
 import Cart from '@/pages/CartPage.vue';
 import OrderComplete from '@/pages/OrderComplete.vue';
+import OrderDetail from '@/pages/Mypage/OrderDetail.vue';
+import OrderList from '@/pages/Mypage/OrderList.vue';
 
 const routes = [
   // { path: '/category/:id', component: Category },
@@ -212,6 +214,17 @@ const routes = [
       }
     },
   },
+  {
+    path: '/orderdetail/:orderId',
+    name: 'OrderDetail',
+    component: OrderDetail,
+    props: true, // ✅ params를 props로 자동 전달
+  },
+  {
+    path: '/orderList',
+    name: 'OrderList',
+    component: OrderList,
+  },
 ];
 
 const router = createRouter({
@@ -229,7 +242,9 @@ router.beforeEach((to, from, next) => {
   }
 
   // 인증이 필요한 페이지 (예: MyPage)
-  const requiresAuth = to.matched.some((record) => record.path.startsWith('/mypage'));
+  const requiresAuth = to.matched.some((record) =>
+    record.path.startsWith('/mypage')
+  );
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // 인증이 필요한 페이지에 접근했지만 로그인되지 않은 경우
