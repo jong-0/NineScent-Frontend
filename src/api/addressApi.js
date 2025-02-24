@@ -84,7 +84,6 @@ export default {
       const { data } = await api.delete(
         `/address/delete/${addrNo}`
       );
-      console.log('default address :', data);
       return data;
     } catch (error) {
       console.error(

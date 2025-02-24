@@ -1,15 +1,17 @@
 <template>
   <div>
     <h1>Faq form</h1>
-    <select v-model="faqData.category">
+    <select v-model="faqData.category" class="category">
       <option v-for="category in categories" :key="category" :value="category">
         {{ categoryLabels[category] }}
       </option>
     </select>
     <br />
-    <input type="text" v-model="faqData.title" placeholder="제목" /><br />
-    <input type="text" v-model="faqData.content" placeholder="내용" /><br />
-    <button @click="submitFaq">등록</button>
+    <input class="title" type="text" v-model="faqData.title" placeholder="제목" /><br />
+    <textarea class="content" v-model="faqData.content" placeholder="내용" /><br />
+    <div class="add-faq">
+      <button class="add-btn" @click="submitFaq">등록</button>
+    </div>
   </div>
 </template>
 
@@ -34,7 +36,7 @@ const categoryLabels = {
 
 // 기본 데이터
 const faqData = ref({
-  category: '',
+  category: 'user',
   title: '',
   content: '',
 });
@@ -80,4 +82,44 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.category {
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.title {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #000000;
+  border-radius: 5px;
+}
+
+.content {
+  width: 100%;
+  height: 200px;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.add-faq {
+  text-align: right;
+  cursor: pointer;
+}
+
+.add-btn {
+  border-radius: 5px;
+  padding: 4px 15px;
+  background: #ffffff;
+}
+
+.add-btn:hover {
+  background: #f0f0f0;
+}
+</style>

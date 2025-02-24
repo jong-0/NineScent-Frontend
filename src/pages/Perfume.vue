@@ -31,12 +31,12 @@ const fetchItems = async () => {
     const response = await itemApi.getItems();
     items.value = response;
   } catch (error) {
-    console.error('Error fetching list', error.message);
+    console.error('Error fetching list', error);
   }
 };
 
 const selectItem = (itemId) => {
-  router.push({ name: 'ItemDetail', params: { id: itemId } });
+  router.push({ name: 'Item', params: { itemId } });
 };
 
 const formattedPrice = (price) => {
