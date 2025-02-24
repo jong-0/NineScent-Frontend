@@ -1,59 +1,73 @@
 <template>
-  <div class="product-detail">
-    <!-- 상품 정보 섹션 -->
-    <div class="product-container">
-      <div class="product-images">
-        <!-- <img :src="product.photo" alt="Product Image" class="main-image" /> -->
-        <img class="main-image" src="@/assets/images/product2.jpg" alt="" />
+  <div v-if="!isLoading">
+    <div class="product-detail">
+      <!-- 상품 정보 섹션 -->
+      <div class="product-container">
+        <div class="product-images">
+          <!-- <img :src="product.photo" alt="Product Image" class="main-image" /> -->
+          <img class="main-image" src="@/assets/images/product2.jpg" alt="" />
+        </div>
+
+        <div class="product-info">
+          <h1>{{ product.itemName }}</h1>
+          <p class="price">{{ formatPrice(product.price) }}원</p>
+          <p>{{ product.description }}</p>
+
+          <!-- 수량 선택 -->
+          <div class="quantity-selector">
+            <button @click="decreaseQuantity">-</button>
+            <input type="number" v-model.number="quantity" min="1" />
+            <button @click="increaseQuantity">+</button>
+          </div>
+
+          <!-- 총 가격 -->
+          <div class="price-summary">
+            <div class="total-price">
+              <span>총 상품금액</span>
+              <span>{{ formatPrice(calculateTotalPrice()) }}원</span>
+            </div>
+            <div class="total-price shipping-cost">
+              <span>배송비</span>
+              <span :class="{ free: shippingCost === 0 }">
+                {{
+                  shippingCost === 0
+                    ? '무료배송'
+                    : formatPrice(shippingCost) + '원 (10만원 이상 구매 시 무료)'
+                }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 장바구니 및 구매 버튼 -->
+          <div class="action-buttons">
+            <button class="buy-now" @click="buyNow">바로구매</button>
+            <button class="add-to-cart" @click="addToCart">장바구니</button>
+          </div>
+        </div>
       </div>
 
-      <div class="product-info">
-        <h1>{{ product.name }}</h1>
-        <p class="price">{{ formatPrice(product.price) }}원</p>
-        <p>{{ product.description }}</p>
-
-        <!-- 수량 선택 -->
-        <div class="quantity-selector">
-          <button @click="decreaseQuantity">-</button>
-          <input type="number" v-model.number="quantity" min="1" />
-          <button @click="increaseQuantity">+</button>
+      <!-- 상품 상세 정보 및 리뷰/Q&A 탭 -->
+      <div class="product-tabs">
+        <div class="tab-headers">
+          <a href="#detail">상세정보</a>
+          <a href="#review">리뷰</a>
+          <a href="#qna">Q&A</a>
         </div>
 
-        <!-- 총 가격 -->
-        <div class="total-price">
-          <span>총 상품금액</span>
-          <span>{{ formatPrice(calculateTotalPrice()) }}원</span>
-        </div>
+        <div class="tab-content">
+          <!-- 상세 정보 -->
+          <div id="detail" class="detail-info">
+            <p>{{ product.titleName }}</p>
+            <!-- <img v-if="product.detail" :src="product.detail" alt="Product Detail Image" /> -->
+            <img src="@/assets/images/product2.jpg" alt="" />
+          </div>
 
-        <!-- 장바구니 및 구매 버튼 -->
-        <div class="action-buttons">
-          <button class="buy-now" @click="buyNow">바로구매</button>
-          <button class="add-to-cart" @click="addToCart">장바구니</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 상품 상세 정보 및 리뷰/Q&A 탭 -->
-    <div class="product-tabs">
-      <div class="tab-headers">
-        <a href="#detail">상세정보</a>
-        <a href="#review">리뷰</a>
-        <a href="#qna">Q&A</a>
-      </div>
-
-      <div class="tab-content">
-        <!-- 상세 정보 -->
-        <div class="detail-info">
-          <p>{{ product.titleName }}</p>
-          <!-- <img v-if="product.detail" :src="product.detail" alt="Product Detail Image" /> -->
-          <img src="@/assets/images/product2.jpg" alt="" />
-        </div>
-
-        <div id="review" class="section">
-          <Review />
-        </div>
-        <div id="qna" class="section">
-          <Qna />
+          <div id="review" class="section">
+            <Review />
+          </div>
+          <div id="qna" class="section">
+            <Qna />
+          </div>
         </div>
       </div>
     </div>
@@ -62,49 +76,34 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 import itemApi from '@/api/itemApi';
+import { cartApi } from '@/api/cartApi';
 import Qna from '@/components/qnareview/Qna.vue';
 import Review from '@/components/qnareview/Review.vue';
 
 const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const userNo = authStore.userNo;
+const isLoading = ref(true);
 
-// ✅ 초기 값 설정 (기본 데이터 제공)
-const product = ref({
-  id: 1,
-  name: '핸드 밤 50ml',
-  price: 32000,
-  description:
-    'Deep Down Hand Balm 50ml 건강하고 소탈한 모습, 내면의 숲을 탐색하는 자유로운 여행자를 떠올립니다. 딥 다운의 향기를 핸드 밤으로 만나보세요.',
-  photo:
-    'https://items-img-bucket.s3.ap-northeast-2.amazonaws.com/main/%E1%84%83%E1%85%B5%E1%86%B8+%E1%84%83%E1%85%A1%E1%84%8B%E1%85%AE%E1%86%AB+%E1%84%92%E1%85%A2%E1%86%AB%E1%84%83%E1%85%B3+%E1%84%87%E1%85%A1%E1%86%B7+50ml.jpg',
-  detail:
-    'https://items-img-bucket.s3.ap-northeast-2.amazonaws.com/detail/%E1%84%89%E1%85%A1%E1%86%BC%E1%84%89%E1%85%A61.jpg',
-});
-
+const product = ref({});
 const quantity = ref(1);
 const productId = route.params.itemId;
 
 // ✅ 백엔드 API에서 데이터 가져오기
 const fetchProduct = async () => {
+  isLoading.value = true;
   try {
     const data = await itemApi.getItemById(productId);
-
-    product.value = {
-      id: data.itemId || 1,
-      name: data.itemName || '핸드 밤 50ml',
-      price: data.price || 32000,
-      description:
-        data.itemDesc || '건강하고 소탈한 모습, 내면의 숲을 탐색하는 자유로운 여행자를 떠올립니다.',
-      photo:
-        data.photo ||
-        'https://items-img-bucket.s3.ap-northeast-2.amazonaws.com/main/sample-product.jpg',
-      detail:
-        data.detail ||
-        'https://items-img-bucket.s3.ap-northeast-2.amazonaws.com/detail/sample-detail.jpg',
-    };
+    console.log(data);
+    product.value = data;
   } catch (error) {
     console.error('상품 데이터 로딩 실패:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -116,6 +115,10 @@ const calculateTotalPrice = () => {
   return product.value.price * quantity.value;
 };
 
+const shippingCost = computed(() => {
+  return calculateTotalPrice() > 100000 ? 0 : 3000;
+});
+
 // 날짜 포맷
 const formatDate = (date) => new Date(date).toLocaleDateString();
 
@@ -126,13 +129,42 @@ const decreaseQuantity = () => {
 };
 
 // 장바구니 추가
-const addToCart = () => {
-  console.log(`장바구니 추가: ${product.value.name}, 수량: ${quantity.value}`);
+const addToCart = async () => {
+  try {
+    const itemId = product.value.itemId;
+    const quant = quantity.value;
+
+    await cartApi.addItem(userNo, itemId, quant);
+    const goToCart = confirm('장바구니에 상품이 추가되었습니다. 장바구니로 이동하시겠습니까?');
+    if (goToCart) {
+      router.push({ name: 'Cart' });
+    }
+  } catch (error) {
+    console.error('Error add to cart', error);
+  }
 };
 
 // 즉시 구매
-const buyNow = () => {
-  console.log(`즉시 구매: ${product.value.name}, 수량: ${quantity.value}`);
+const buyNow = async () => {
+  try {
+    const itemId = product.value.itemId;
+    const quant = quantity.value;
+
+    sessionStorage.setItem('itemId', itemId);
+    sessionStorage.setItem('orderType', 'item');
+
+    const itemData = await itemApi.getItemById(itemId);
+    itemData.quantity = quant;
+
+    console.log(itemData);
+
+    sessionStorage.setItem('itemData', JSON.stringify(itemData));
+    sessionStorage.setItem('shippingCost', shippingCost.value);
+
+    router.push({ name: 'Checkout' });
+  } catch (error) {
+    console.error('Error ordering', error);
+  }
 };
 
 // ✅ 페이지 로드 시 상품 데이터 가져오기
@@ -228,11 +260,25 @@ onMounted(() => {
 .total-price {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin: 30px 0;
-  padding: 20px 0;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+
+.total-price span {
+  font-weight: 500;
+}
+
+.total-price .price {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.shipping-cost span {
+  color: #ff5a5f;
+}
+
+.shipping-cost .free {
+  color: #2ecc71; /* 무료배송일 때 강조 */
+  font-weight: 600;
 }
 
 .action-buttons {
@@ -358,5 +404,12 @@ onMounted(() => {
 
 .section {
   margin-top: 70px;
+}
+
+.price-summary {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 16px;
 }
 </style>
