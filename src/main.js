@@ -1,5 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import VueAwesomePaginate from 'vue-awesome-paginate';
+import 'vue-awesome-paginate/dist/style.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
@@ -18,7 +20,7 @@ library.add(faUser, faCartShopping);
 const app = createApp(App);
 
 app.use(createPinia());
-
+app.use(VueAwesomePaginate);
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(router);
 
