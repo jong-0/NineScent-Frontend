@@ -1,6 +1,8 @@
 <template>
   <div class="address-form-container">
-    <h1 class="title">배송지 수정</h1>
+    <h1 class="title">
+      {{ mode === 'add' ? '배송지 추가' : '배송지 수정' }}
+    </h1>
 
     <div class="address-form">
       <input
@@ -8,27 +10,32 @@
         v-model="addressData.addrNicName"
         placeholder="주소지 별칭"
         class="input-field"
+        required
       />
       <input
         type="text"
         v-model="addressData.addrName"
         placeholder="받는 사람"
         class="input-field"
+        required
       />
       <input
         type="text"
+        id="numberInput"
         v-model="addressData.addrContact"
         placeholder="연락처"
         class="input-field"
+        @input="formatPhoneNumber"
+        required
       />
 
       <div class="zipcode-container">
         <input
           type="text"
-          id="addrZipcode"
           v-model="addressData.addrZipcode"
           placeholder="우편번호"
           class="input-field zipcode"
+          disabled
         />
         <button
           class="btn zipcode-btn"
@@ -37,29 +44,37 @@
           우편번호 찾기
         </button>
       </div>
+      <!-- 우편번호 찾기 -->
+      <div id="wrap" class="zipcode-modal">
+        <img
+          src="//t1.daumcdn.net/postcode/resource/images/close.png"
+          class="close-btn"
+          @click="foldDaumPostcode"
+          alt="닫기"
+        />
+      </div>
 
       <input
         type="text"
-        id="addrAddress"
         v-model="addressData.addrAddress"
         placeholder="주소"
         class="input-field"
+        disabled
       />
       <input
         type="text"
-        id="addrDetail"
         v-model="addressData.addrDetail"
         placeholder="상세주소"
         class="input-field"
+        required
       />
       <input
         type="text"
-        id="addrExtraDetail"
         v-model="addressData.addrExtraDetail"
         placeholder="참고주소"
         class="input-field"
+        disabled
       />
-
       <input
         type="text"
         v-model="addressData.addrRequest"
@@ -76,66 +91,30 @@
       </label>
 
       <div class="button-group">
+        <button class="btn submit-btn" @click="submitForm">
+          {{ mode === 'add' ? '추가 완료' : '수정 완료' }}
+        </button>
         <button
           class="btn cancel-btn"
-          @click="cancelUpdate"
+          @click="cancelAction"
         >
           취소
         </button>
-        <button
-          class="btn submit-btn"
-          @click="submitAddress"
-        >
-          수정 완료
-        </button>
       </div>
-    </div>
-
-    <!-- 우편번호 찾기 -->
-    <div id="wrap" class="zipcode-modal">
-      <img
-        src="//t1.daumcdn.net/postcode/resource/images/close.png"
-        id="btnFoldWrap"
-        class="close-btn"
-        @click="foldDaumPostcode"
-        alt="접기 버튼"
-      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import addressApi from '@/api/addressApi';
+import { isNumber } from 'lodash';
+import { ref, watch, defineProps, defineEmits } from 'vue';
 
-const address = ref('');
-
-const route = useRoute();
-const router = useRouter();
-const addrNo = route.params.addrNo;
-const userNo = localStorage.getItem('userNo'); // Local Storage에서 가져오기
-
-const fetchAddress = async () => {
-  try {
-    const fetchedData = await addressApi.getAddress(addrNo); // 주소 데이터를 API에서 가져옴
-    // addressData에 데이터 채우기
-    addressData.value = {
-      addrNicName: fetchedData.addrNicName || '',
-      addrName: fetchedData.addrName || '',
-      addrContact: fetchedData.addrContact || '',
-      addrZipcode: fetchedData.addrZipcode || '',
-      addrAddress: fetchedData.addrAddress || '',
-      addrDetail: fetchedData.addrDetail || '',
-      addrExtraDetail: fetchedData.addrExtraDetail || '',
-      addrRequest: fetchedData.addrRequest || '',
-      isDefault: fetchedData.isDefault || false,
-    };
-  } catch (error) {
-    console.error('Error fetching address:', error);
-    alert('주소 정보를 가져오는 데 실패했습니다.');
-  }
-};
+const props = defineProps({
+  mode: { type: String, required: true }, // "add" or "edit"
+  initialData: { type: Object, required: true }, // 기존 데이터
+  submitFunction: { type: Function, required: true }, // API 호출 함수
+  cancelFunction: { type: Function, required: true }, // 취소 버튼 함수
+});
 
 // 주소 데이터
 const addressData = ref({
@@ -149,6 +128,30 @@ const addressData = ref({
   addrRequest: '',
   isDefault: false,
 });
+
+const formatPhoneNumber = () => {
+  let phone = addressData.value.addrContact.replace(
+    /\D/g,
+    ''
+  ); // 숫자만 남기기
+  if (phone.length > 3 && phone.length <= 7) {
+    phone = `${phone.slice(0, 3)}-${phone.slice(3)}`;
+  } else if (phone.length > 7) {
+    phone = `${phone.slice(0, 3)}-${phone.slice(
+      3,
+      7
+    )}-${phone.slice(7, 11)}`;
+  }
+  addressData.value.addrContact = phone;
+};
+
+watch(
+  () => props.initialData,
+  (newData) => {
+    addressData.value = { ...newData };
+  },
+  { deep: true }
+);
 
 // Daum 우편번호 찾기
 const execDaumPostcode = () => {
@@ -222,40 +225,34 @@ const foldDaumPostcode = () => {
   if (element) element.style.display = 'none';
 };
 
-const cancelUpdate = () => {
-  router.push({ name: 'Address', params: { userNo } }); // Address 페이지로 이동
-};
-// 백엔드로 주소 데이터 저장
-const submitAddress = async () => {
-  console.log(addressData.value);
+// 필수 입력값 검사 후 제출
+const submitForm = async () => {
+  const requiredFields = [
+    'addrNicName',
+    'addrName',
+    'addrContact',
+    'addrZipcode',
+    'addrDetail',
+  ];
+  const isValid = requiredFields.every(
+    (field) => addressData.value[field]
+  );
 
-  if (
-    !addressData.value.addrNicName ||
-    !addressData.value.addrName ||
-    !addressData.value.addrContact ||
-    !addressData.value.addrZipcode ||
-    !addressData.value.addrAddress
-  ) {
+  if (!isValid) {
     alert('모든 필수 정보를 입력해주세요.');
     return;
   }
 
-  try {
-    await addressApi.updateAddress(
-      addrNo,
-      addressData.value
-    );
-    alert('주소가 성공적으로 수정되었습니다.'); // 성공 메시지 표시
-    localStorage.setItem('userNo', userNo); // Local Storage에 저장
-    router.push({ name: 'Address', params: { userNo } }); // Address 페이지로 이동
-  } catch (error) {
-    alert('주소 저장에 실패했습니다. 다시 시도해주세요.');
-  }
+  console.log('🚀 제출 데이터:', addressData.value);
+  await props.submitFunction(addressData.value);
+
+  alert('주소가 성공적으로 저장되었습니다.');
 };
 
-onMounted(() => {
-  fetchAddress();
-});
+// 취소
+const cancelAction = () => {
+  props.cancelFunction();
+};
 </script>
 
 <style scoped>

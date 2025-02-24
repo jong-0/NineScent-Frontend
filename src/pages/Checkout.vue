@@ -212,7 +212,10 @@ const totalDiscount = computed(() => {
 });
 
 const goToAddressPage = () => {
-  router.push({ name: 'Address', params: { userNo } });
+  router.push({
+    name: 'Address',
+    query: { source: 'checkout' },
+  });
 };
 
 onMounted(() => {

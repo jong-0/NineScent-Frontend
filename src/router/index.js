@@ -10,9 +10,9 @@ import FindId from '@/pages/member/FindId.vue';
 import FindPw from '@/pages/member/FindPw.vue';
 
 import Checkout from '@/pages/Checkout.vue';
-import Address from '@/pages/Address.vue';
-import AddAddress from '@/pages/AddAddress.vue';
-import UpdateAddress from '@/pages/UpdateAddress.vue';
+import Address from '@/pages/Address/Address.vue';
+import AddAddress from '@/pages/Address/AddAddress.vue';
+import UpdateAddress from '@/pages/Address/UpdateAddress.vue';
 import CSCenter from '@/pages/CSCenter.vue';
 import AddFaq from '@/pages/AddFaq.vue';
 import Perfume from '@/pages/Perfume.vue';
@@ -21,7 +21,7 @@ import Item from '@/pages/Item.vue';
 import AddQna from '@/pages/AddQna.vue';
 import AddReview from '@/pages/AddReview.vue';
 
-import MyPage from '@/pages/MyPage.vue';
+import MyPage from '@/pages/Mypage/MyPage.vue';
 // import Category from '@/pages/Category.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
 import Cart from '@/pages/CartPage.vue';
@@ -72,9 +72,16 @@ const routes = [
     component: Checkout,
   },
   {
-    path: '/address/:userNo',
+    path: '/address',
     name: 'Address',
     component: Address,
+    props: { source: 'mypage' },
+  },
+  {
+    path: '/address',
+    name: 'Address',
+    component: Address,
+    props: { source: 'checkout' },
   },
   {
     path: '/addaddress',
@@ -154,32 +161,11 @@ const routes = [
     component: Cart,
   },
   {
-    path: '/checkout',
-    name: 'Checkout',
-    component: Checkout,
-  },
-
-  {
     path: '/complete',
     name: 'OrderComplete',
     component: OrderComplete,
   },
 
-  {
-    path: '/address/:userNo',
-    name: 'Address',
-    component: Address,
-  },
-  {
-    path: '/addaddress',
-    name: 'AddAddress',
-    component: AddAddress,
-  },
-  {
-    path: '/updateaddress/:addrNo',
-    name: 'UpdateAddress',
-    component: UpdateAddress,
-  },
   {
     path: '/cscenter',
     name: 'CSCenter',
