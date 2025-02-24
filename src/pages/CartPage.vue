@@ -42,8 +42,8 @@
     <div class="row gx-5">
       <!-- 상품 목록 -->
       <div class="col-12 col-lg-8">
-        <template v-if="cartProducts.length > 0">
-          <template
+        <div v-if="cartProducts.length > 0">
+          <div
             v-for="(product, index) in cartProducts"
             :key="index"
           >
@@ -70,13 +70,14 @@
                 updateQuantity(
                   index,
                   product.itemId,
-                  $event
+                  $event,
+                  'set'
                 )
               "
               @remove-item="removeItem(product.itemId)"
             />
-          </template>
-        </template>
+          </div>
+        </div>
         <div v-else class="text-center text-muted py-4">
           <p>현재 장바구니에 담긴 상품이 없습니다.</p>
         </div>
@@ -109,7 +110,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { cartApi } from '@/api/cartApi';
 import { useAuthStore } from '@/stores/authStore';
-import _ from 'lodash';
 
 import ProductCartItem from '../components/cart/ProductCartItem.vue';
 import OrderSummary from '../components/cart/OrderSummary.vue';
@@ -248,52 +248,36 @@ function updateSelected(index, isSelected) {
   cartProducts.value[index].selected = isSelected;
 }
 
-// 디바운싱을 적용한 API 요청 함수(300ms 지연)
-const debouncedUpdateQuantity = _.debounce(
-  async (index, itemId, newQuantity) => {
-    try {
-      console.log(
-        '🚀 API 요청 실행: itemId -',
-        itemId,
-        '수량-',
-        newQuantity
-      );
-      await cartApi.updateItem(
-        authStore.userId,
-        itemId,
-        newQuantity
-      );
-    } catch (error) {
-      console.error('❌ 수량 변경 API 요청 실패:', error);
-    }
-  },
-  300
-); // ✅ 사용자가 300ms 동안 입력을 멈춘 후에만 실행됨
-
-//  수량 업데이트 (프론트 + 백엔드 동기화)
+// ✅ 수량 업데이트 (Vue 리렌더링 + API 연동)
 const updateQuantity = async (
   index,
   itemId,
-  newQuantity
+  newQuantity,
+  action
 ) => {
-  console.log('🛠 수량 변경 감지:', newQuantity);
-  // 변경 사항을 감지할 수 있도록 새로운 객체를 생성하여 대입
+  console.log(
+    `🛠 수량 변경 감지: ${newQuantity}, Action: ${action}`
+  );
+
+  // Vue 리렌더링을 위한 깊은 복사 적용
   cartProducts.value[index] = {
     ...cartProducts.value[index],
     quantity: newQuantity,
   };
-
-  // Vue가 변경 사항을 감지할 수 있도록 배열을 완전히 새로 대입
   cartProducts.value = [...cartProducts.value];
 
-  // ✅ API 호출 (디바운싱 적용)
-  debouncedUpdateQuantity(index, itemId, newQuantity);
-
-  // try {
-  //     await cartApi.updateItem(authStore.userId, itemId, quantity);
-  // } catch (error) {
-  //     console.error('수량 변경 실패:', error);
-  // }
+  // ✅ API 호출
+  try {
+    const response = await cartApi.updateItem(
+      authStore.userNo,
+      itemId,
+      newQuantity,
+      action
+    );
+    console.log('✅ 수량 변경 완료:', response);
+  } catch (error) {
+    console.error('❌ 수량 변경 실패:', error);
+  }
 };
 
 //  개별 상품 제거
@@ -301,7 +285,7 @@ const removeItem = async (itemId) => {
   if (!confirm('정말 삭제하시겠습니까?')) return;
 
   try {
-    await cartApi.removeItem(authStore.userId, itemId);
+    await cartApi.removeItem(authStore.userNo, itemId);
     loadCart(); // 장바구니 다시 불러오기
   } catch (error) {
     console.error('상품 삭제 실패:', error);
@@ -323,7 +307,7 @@ const removeSelectedItems = async () => {
   try {
     for (const product of selectedItems) {
       await cartApi.removeItem(
-        authStore.userId,
+        authStore.userNo,
         product.itemId
       );
     }

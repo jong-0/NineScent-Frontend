@@ -12,18 +12,31 @@
 
       <div class="product-info">
         <h1>{{ product.name }}</h1>
-        <p class="price">{{ formatPrice(product.price) }}원</p>
+        <p class="price">
+          {{ formatPrice(product.price) }}원
+        </p>
         <p>
-          Deep Down Hand Balm 50ml <br />건강하고 소탈한 모습, 내면의 숲을 탐색하는 자유로운
-          여행자를 떠올립니다.<br />
+          Deep Down Hand Balm 50ml <br />건강하고 소탈한
+          모습, 내면의 숲을 탐색하는 자유로운 여행자를
+          떠올립니다.<br />
           딥 다운의 향기를 핸드 밤으로 만나보세요.
         </p>
         <div class="product-options">
-          <div class="option-group" v-for="option in product.options" :key="option.id">
+          <div
+            class="option-group"
+            v-for="option in product.options"
+            :key="option.id"
+          >
             <label>{{ option.name }}</label>
             <select v-model="selectedOptions[option.id]">
-              <option v-for="choice in option.choices" :key="choice.id" :value="choice.id">
-                {{ choice.name }} (+{{ formatPrice(choice.additionalPrice) }}원)
+              <option
+                v-for="choice in option.choices"
+                :key="choice.id"
+                :value="choice.id"
+              >
+                {{ choice.name }} (+{{
+                  formatPrice(choice.additionalPrice)
+                }}원)
               </option>
             </select>
           </div>
@@ -31,18 +44,49 @@
 
         <div class="quantity-selector">
           <button @click="decreaseQuantity">-</button>
-          <input type="number" v-model.number="quantity" min="1" />
+          <input
+            type="number"
+            v-model.number="quantity"
+            min="1"
+          />
           <button @click="increaseQuantity">+</button>
         </div>
 
-        <div class="total-price">
-          <span>총 상품금액</span>
-          <span>{{ formatPrice(calculateTotalPrice()) }}원</span>
+        <div class="price-summary">
+          <div class="total-price">
+            <span>총 상품금액</span>
+            <span class="price"
+              >{{ formatPrice(finalProductPrice) }}원</span
+            >
+          </div>
+          <div class="total-price shipping-cost">
+            <span>배송비</span>
+            <span :class="{ free: shippingCost === 0 }">
+              {{
+                shippingCost === 0
+                  ? '무료배송'
+                  : formatPrice(shippingCost) + '원'
+              }}
+            </span>
+          </div>
         </div>
-
+        <!-- <div class="total-price">
+          <span>총 상품금액</span>
+          <span
+            >{{ formatPrice(finalProductPrice) }}원</span
+          >
+        </div>
+        <div class="shipping-cost">
+          <span>배송비</span>
+          <span>{{ formatPrice(shippingCost) }}원</span>
+        </div> -->
         <div class="action-buttons">
-          <button class="buy-now" @click="buyNow">바로구매</button>
-          <button class="add-to-cart" @click="addToCart">장바구니</button>
+          <button class="buy-now" @click="buyNow()">
+            바로구매
+          </button>
+          <button class="add-to-cart" @click="addToCart">
+            장바구니
+          </button>
         </div>
       </div>
     </div>
@@ -62,19 +106,32 @@
 
       <div class="tab-content">
         <!-- 상세정보 -->
-        <div v-if="currentTab === 'detail'" class="detail-info">
+        <div
+          v-if="currentTab === 'detail'"
+          class="detail-info"
+        >
           <div class="product-description">
             <!-- <h2>About Hand Balm</h2> -->
             <p>{{ product.description }}</p>
           </div>
-          <img v-for="img in product.detailImages" :key="img.id" :src="img.url" :alt="img.alt" />
+          <img
+            v-for="img in product.detailImages"
+            :key="img.id"
+            :src="img.url"
+            :alt="img.alt"
+          />
         </div>
 
         <!-- 리뷰 섹션 -->
-        <!-- <div v-if="currentTab === 'reviews'" class="reviews">
+        <div
+          v-if="currentTab === 'reviews'"
+          class="reviews"
+        >
           <div class="review-summary">
             <div class="rating">
-              <span class="average">{{ averageRating }}</span
+              <span class="average">{{
+                averageRating
+              }}</span
               >/5
               <div class="stars">
                 <i
@@ -88,9 +145,15 @@
           </div>
 
           <div class="review-list">
-            <div v-for="review in reviews" :key="review.id" class="review-item">
+            <div
+              v-for="review in reviews"
+              :key="review.id"
+              class="review-item"
+            >
               <div class="review-header">
-                <span class="author">{{ review.author }}</span>
+                <span class="author">{{
+                  review.author
+                }}</span>
                 <div class="stars">
                   <i
                     v-for="n in 5"
@@ -99,26 +162,38 @@
                     :class="{ filled: n <= review.rating }"
                   ></i>
                 </div>
-                <span class="date">{{ formatDate(review.date) }}</span>
+                <span class="date">{{
+                  formatDate(review.date)
+                }}</span>
               </div>
-              <p class="review-content">{{ review.content }}</p>
+              <p class="review-content">
+                {{ review.content }}
+              </p>
             </div>
           </div>
-        </div> -->
+        </div>
 
         <!-- Q&A 섹션 -->
         <!-- <div v-if="currentTab === 'qna'" class="qna">
           <div class="qna-list">
-            <div v-for="qna in qnaList" :key="qna.id" class="qna-item">
+            <div
+              v-for="qna in qnaList"
+              :key="qna.id"
+              class="qna-item"
+            >
               <div class="question">
                 <span class="q-mark">Q</span>
                 <p>{{ qna.question }}</p>
-                <span class="date">{{ formatDate(qna.date) }}</span>
+                <span class="date">{{
+                  formatDate(qna.date)
+                }}</span>
               </div>
               <div class="answer" v-if="qna.answer">
                 <span class="a-mark">A</span>
                 <p>{{ qna.answer }}</p>
-                <span class="date">{{ formatDate(qna.answerDate) }}</span>
+                <span class="date">{{
+                  formatDate(qna.answerDate)
+                }}</span>
               </div>
             </div>
           </div>
@@ -133,7 +208,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Review from '@/components/qnareview/Review.vue';
 import Qna from '@/components/qnareview/Qna.vue';
 import itemApi from '@/api/itemApi';
-
+import { useAuthStore } from '@/stores/authStore';
 export default {
   name: 'ProductDetail',
   components: {
@@ -144,7 +219,9 @@ export default {
   setup() {
     const route = useRoute();
     const router = useRouter();
-    return { route, router };
+    const authStore = useAuthStore();
+    const userNo = authStore.userNo;
+    return { route, router, userNo };
   },
 
   data() {
@@ -179,7 +256,11 @@ export default {
             name: '용량',
             choices: [
               { id: 1, name: '50ml', additionalPrice: 0 },
-              { id: 2, name: '100ml', additionalPrice: 10000 },
+              {
+                id: 2,
+                name: '100ml',
+                additionalPrice: 10000,
+              },
             ],
           },
         ],
@@ -200,8 +281,34 @@ export default {
   computed: {
     averageRating() {
       if (this.reviews.length === 0) return 0;
-      const sum = this.reviews.reduce((acc, review) => acc + review.rating, 0);
+      const sum = this.reviews.reduce(
+        (acc, review) => acc + review.rating,
+        0
+      );
       return (sum / this.reviews.length).toFixed(1);
+    },
+    // ✅ 개별 상품의 최종 가격 계산 (옵션 포함)
+    finalProductPrice() {
+      let basePrice = this.product.price;
+      Object.entries(this.selectedOptions).forEach(
+        ([optionId, choiceId]) => {
+          const option = this.product.options.find(
+            (opt) => opt.id === optionId
+          );
+          const choice = option.choices.find(
+            (c) => c.id === choiceId
+          );
+          if (choice) {
+            basePrice += choice.additionalPrice;
+          }
+        }
+      );
+      return basePrice * this.quantity;
+    },
+
+    // ✅ 개별 상품 배송비 계산 (10만 원 이상 무료 배송)
+    shippingCost() {
+      return this.finalProductPrice >= 100000 ? 0 : 3000;
     },
   },
 
@@ -214,18 +321,24 @@ export default {
       return new Date(date).toLocaleDateString();
     },
 
-    calculateTotalPrice() {
-      let basePrice = this.product.price;
-      // Add additional option prices
-      Object.entries(this.selectedOptions).forEach(([optionId, choiceId]) => {
-        const option = this.product.options.find((opt) => opt.id === optionId);
-        const choice = option.choices.find((c) => c.id === choiceId);
-        if (choice) {
-          basePrice += choice.additionalPrice;
-        }
-      });
-      return basePrice * this.quantity;
-    },
+    // calculateTotalPrice() {
+    //   let basePrice = this.product.price;
+    //   // Add additional option prices
+    //   Object.entries(this.selectedOptions).forEach(
+    //     ([optionId, choiceId]) => {
+    //       const option = this.product.options.find(
+    //         (opt) => opt.id === optionId
+    //       );
+    //       const choice = option.choices.find(
+    //         (c) => c.id === choiceId
+    //       );
+    //       if (choice) {
+    //         basePrice += choice.additionalPrice;
+    //       }
+    //     }
+    //   );
+    //   return basePrice * this.quantity;
+    // },
 
     increaseQuantity() {
       this.quantity++;
@@ -238,32 +351,65 @@ export default {
     },
 
     async addToCart() {
+      const userNo = this.userNo;
       try {
-        await this.$store.dispatch('cart/addItem', {
-          productId: this.product.id,
+        const cartItemDTO = {
+          itemId: this.product.id,
           quantity: this.quantity,
-          options: this.selectedOptions,
-        });
-        this.$toast.success('장바구니에 추가되었습니다');
+        };
+
+        const response = await fetch(
+          `/api/cart/add/${userNo}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cartItemDTO),
+          }
+        );
+        if (!response.ok)
+          throw new Error('장바구니 추가 실패');
+
+        // 장바구니 추가 성공 후 알림창
+        const goToCart = confirm(
+          '장바구니에 추가되었습니다. 장바구니로 이동하시겠습니까?'
+        );
+        if (goToCart) {
+          this.$router.push({ name: 'Cart' });
+        }
       } catch (error) {
-        this.$toast.error('장바구니 추가 실패');
+        console.error('Error add to cart', error);
       }
     },
 
     async buyNow() {
+      const itemId = this.product.id;
+      const quantity = this.quantity; // 선택한 수량 반영
+
+      sessionStorage.setItem('itemId', itemId); // 세션 스토리지에 저장
+      sessionStorage.setItem('orderType', 'item'); // 주문 타입 저장
+
       try {
-        await this.$store.dispatch('order/createOrder', {
-          items: [
-            {
-              productId: this.product.id,
-              quantity: this.quantity,
-              options: this.selectedOptions,
-            },
-          ],
-        });
-        this.$router.push('/checkout');
+        // 주문 데이터 백엔드에서 불러오기
+        const response = await fetch(
+          `/api/items/${itemId}`
+        );
+        const itemData = await response.json();
+        itemData.quantity = quantity; // 데이터에 수량 추가
+
+        // 주문 데이터 sessionStorage에 저장
+        sessionStorage.setItem(
+          'itemData',
+          JSON.stringify(itemData)
+        );
+        sessionStorage.setItem(
+          'shippingCost',
+          this.shippingCost
+        );
+
+        // 페이지 이동
+        this.$router.push({ name: 'Checkout' });
       } catch (error) {
-        this.$toast.error('주문 처리 실패');
+        console.error('Error ordering', error);
       }
     },
   },
@@ -280,19 +426,27 @@ export default {
       //   this.$api.qna.getList({ productId }),
       // ]);
 
-      const productData = await itemApi.getItemById(productId);
+      const productData = await itemApi.getItemById(
+        productId
+      );
       console.log('productData: ', productData);
+      // const [productData, reviewsData, qnaData] = await Promise.all([
+      //   this.$api.products.getDetail(productId),
+      //   this.$api.reviews.getList({ productId }),
+      //   this.$api.qna.getList({ productId }),
+      // ]);
 
-      this.product = productData;
+      // this.product = productData;
       // this.reviews = reviewsData.items;
       // this.qnaList = qnaData.items;
 
       // Initialize selected options
       this.product.options.forEach((option) => {
-        this.selectedOptions[option.id] = option.choices[0].id;
+        this.selectedOptions[option.id] =
+          option.choices[0].id;
       });
     } catch (error) {
-      this.$toast.error('데이터 로딩 실패');
+      console.error('Error data loading', error);
     }
   },
 };
@@ -382,14 +536,35 @@ export default {
   margin: 0 5px;
 }
 
+.price-summary {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
 .total-price {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin: 30px 0;
-  padding: 20px 0;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+
+.total-price span {
+  font-weight: 500;
+}
+
+.total-price .price {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.shipping-cost span {
+  color: #ff5a5f;
+}
+
+.shipping-cost .free {
+  color: #2ecc71; /* 무료배송일 때 강조 */
+  font-weight: 600;
 }
 
 .action-buttons {

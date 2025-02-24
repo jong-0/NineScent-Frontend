@@ -6,7 +6,7 @@
       v-if="addresses && addresses.length"
       class="address-list"
     >
-      <h3 class="subtitle">배송지 리스트</h3>
+      <!-- <h3 class="subtitle">배송지 리스트</h3> -->
       <div
         v-for="address in addresses"
         :key="address.addrNo"
@@ -20,14 +20,14 @@
             {{ address.addrDetail }}
           </p>
           <p>{{ address.addrContact }}</p>
+          <p>요청사항: {{ address.addrRequest }}</p>
         </div>
 
-        <p v-if="address.isDefault" class="default-address">
-          기본 배송지입니다. (삭제할 수 없습니다)
-        </p>
-
         <div class="button-group">
+          <!-- ✅ 체크아웃 페이지에서는 '선택' 버튼 표시 -->
+
           <button
+            v-if="source === 'checkout'"
             class="btn select"
             @click="selectAddress(address.addrNo)"
           >
@@ -46,6 +46,12 @@
           >
             삭제
           </button>
+          <span
+            v-if="address.isDefault"
+            class="default-address"
+          >
+            기본 배송지입니다. (삭제할 수 없습니다)
+          </span>
         </div>
       </div>
     </div>
@@ -54,10 +60,20 @@
       <button class="btn add" @click="goAddAddress">
         배송지 추가
       </button>
+      <!-- 마이페이지에서는 '돌아가기'를 마이페이지로 -->
       <button
-        v-if="addresses && addresses.length"
+        v-if="source === 'mypage'"
         class="btn back"
-        @click="selectAddress(null)"
+        @click="goBack"
+      >
+        돌아가기
+      </button>
+
+      <!-- 체크아웃 페이지에서는 '돌아가기'를 체크아웃으로 -->
+      <button
+        v-if="source === 'checkout'"
+        class="btn back"
+        @click="goToCheckout"
       >
         돌아가기
       </button>
@@ -67,12 +83,17 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 import addressApi from '@/api/addressApi';
 
-// const route = useRoute();
+const authStore = useAuthStore();
 const router = useRouter();
-const userNo = localStorage.getItem('userNo'); // Local Storage에서 가져오기
+const route = useRoute();
+
+// `query.source`에서 값을 가져오도록 수정 (기본값: 'mypage')
+const source = ref(route.query.source);
+const userNo = authStore.userNo;
 const addresses = ref({});
 
 const fetchAddressList = async () => {
@@ -86,20 +107,20 @@ const fetchAddressList = async () => {
   }
 };
 
+// 주소 추가
 const goAddAddress = () => {
-  localStorage.setItem('userNo', userNo); // Local Storage에 저장
-  router.push({ name: 'AddAddress' }); // state 대신 params 없이 이동
+  router.push({ name: 'AddAddress' });
 };
-
+// 주소 수정
 const goUpdateAddress = (addrNo) => {
-  localStorage.setItem('userNo', userNo); // Local Storage에 저장
   router.push({
     name: 'UpdateAddress',
     params: { addrNo },
-  }); // state 대신 params 없이 이동
+  });
 };
 
 const deleteAddress = async (addrNo) => {
+  if (!confirm('삭제하시겠습니까?')) return;
   const addressToDelete = addresses.value.find(
     (address) => address.addrNo === addrNo
   );
@@ -119,6 +140,8 @@ const deleteAddress = async (addrNo) => {
 
 // 선택한 주소 업데이트
 const selectAddress = async (addrNo) => {
+  if (source.value !== 'checkout') return; // 마이페이지에서는 선택 X
+
   if (!addrNo) {
     const defaultAddress = addresses.value.find(
       (address) => address.isDefault === true
@@ -137,7 +160,20 @@ const selectAddress = async (addrNo) => {
     console.error('Error updating order address:', error);
   }
 };
+// 마이페이지에서 돌아가기
+const goBack = () => {
+  if (authStore.isAuthenticated) {
+    router.push(`/mypage/${authStore.userId}`);
+  } else {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
+  }
+};
 
+// 체크아웃에서 돌아가기
+const goToCheckout = () => {
+  router.push({ name: 'Checkout' });
+};
 onMounted(() => {
   fetchAddressList();
 });
@@ -157,10 +193,10 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.subtitle {
+/* .subtitle {
   font-size: 1.4rem;
   margin-bottom: 15px;
-}
+} */
 
 /* 배송지 리스트 */
 .address-list {
@@ -191,6 +227,7 @@ onMounted(() => {
 }
 
 .default-address {
+  margin-top: 0.5rem;
   font-size: 0.9rem;
   color: #ff5733;
 }
