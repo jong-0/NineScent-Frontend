@@ -1,6 +1,12 @@
 <template>
   <div v-if="!isLoading">
     <div>
+      <div class="qna-header">
+        <div class="title">QNA ({{ qnas.length }})</div>
+        <div class="add-qna">
+          <button class="add-btn" @click="addQna(itemId)">문의하기</button>
+        </div>
+      </div>
       <div class="qna-container">
         <p class="no-content" v-if="qnas.length === 0">등록된 문의가 없습니다.</p>
         <ul class="qna-list" v-else>
@@ -73,9 +79,6 @@
           </div>
         </ul>
       </div>
-    </div>
-    <div class="add-qna">
-      <button class="add-btn" @click="addQna(itemId)">글쓰기</button>
     </div>
   </div>
 </template>
@@ -365,7 +368,6 @@ onMounted(() => {
 
 .add-qna {
   text-align: right;
-  margin: 20px 0px;
 }
 
 .add-btn {
@@ -381,5 +383,15 @@ onMounted(() => {
 .answer-date {
   color: #7a7a7a;
   margin-bottom: 0px;
+}
+
+.qna-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 25px;
 }
 </style>

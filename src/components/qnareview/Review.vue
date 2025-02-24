@@ -1,6 +1,36 @@
 <template>
   <div v-if="!isLoading">
     <div>
+      <div class="rating-header">
+        <p class="rating-text1">실제 구매한 고객님께서 작성해주셨어요.</p>
+        <p class="rating-text2">리뷰 작성시 적립금을 드립니다.</p>
+      </div>
+      <div class="rating-container">
+        <div class="rating">
+          <div>{{ rating }}/5</div>
+          <div class="stars">
+            <span v-for="i in 5" :key="i" class="star">
+              <i v-if="i <= Math.floor(rating)" class="fa-solid fa-star full"></i>
+              <i
+                v-else-if="i === Math.ceil(rating) && rating % 1 !== 0"
+                class="fa-solid fa-star half"
+                :style="getStarStyle(rating % 1)"
+              ></i>
+              <i v-else class="fa-regular fa-star empty"></i>
+            </span>
+          </div>
+          <div>{{ reviews.length }}개의 후기</div>
+        </div>
+        <div class="rating-chart">
+          <BarChart :ratingCounts="ratingCounts" />
+        </div>
+      </div>
+      <div class="review-header">
+        <div class="title">REVIEW ({{ reviews.length }})</div>
+        <div class="add-review">
+          <button class="add-btn" @click="addReview(itemId)">리뷰등록</button>
+        </div>
+      </div>
       <div class="review-container">
         <p class="no-content" v-if="reviews.length === 0">등록된 후기가 없습니다.</p>
         <ul class="review-list" v-else>
@@ -28,26 +58,26 @@
         </ul>
       </div>
     </div>
-    <div class="add-review">
-      <button class="add-btn" @click="addReview(itemId)">글쓰기</button>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
+import BarChart from '@/components/chart/BarChart.vue';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
 const reviews = ref([]);
+const rating = ref(0);
 const isLoading = ref(true);
-let userNo = 0;
+const ratingCounts = ref({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
 
+let userNo = 0;
 const itemId = route.params.itemId;
 
 const isReviewOwner = (review) => {
@@ -98,8 +128,36 @@ const deleteReview = async (reviewId) => {
   }
 };
 
+const getRating = async () => {
+  try {
+    const response = await faqnaReviewApi.getRatingByItemId(itemId);
+    rating.value = response;
+  } catch (error) {
+    console.error('Error fetching rating data', error);
+  }
+};
+
+const getRatingCounts = async () => {
+  try {
+    const response = await faqnaReviewApi.getRatingCountsByItemId(itemId);
+    ratingCounts.value = response;
+  } catch (error) {
+    console.error('Error fetching rating counts', error);
+  }
+};
+
+const getStarStyle = (fraction) => {
+  return {
+    background: `linear-gradient(90deg, #fa9200 ${fraction * 100}%, #e0e0e0 ${fraction * 100}%)`,
+    '-webkit-background-clip': 'text',
+    '-webkit-text-fill-color': 'transparent',
+  };
+};
+
 onMounted(() => {
   fetchReviewData();
+  getRating();
+  getRatingCounts();
   authStore.loadStoredToken();
 
   const getUserNo = localStorage.getItem('userNo');
@@ -110,6 +168,74 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.rating-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.rating-text1 {
+  font-size: 20px;
+  margin-top: 50px;
+}
+
+.rating-text2 {
+  font-size: 20px;
+}
+
+.rating-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+.rating {
+  display: flex;
+  width: 50%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  border-right: 1px solid #e0e0e0;
+  padding-left: 50px;
+}
+
+.rating-chart {
+  padding-left: 50px;
+  width: 50%;
+  height: auto;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 25px;
+}
+
+.stars {
+  display: flex;
+  margin-top: 10px;
+}
+
+.star {
+  position: relative;
+  display: inline-block;
+  font-size: 35px;
+}
+
 .no-content {
   text-align: center;
   margin: 20px 0px;
@@ -135,7 +261,6 @@ onMounted(() => {
 
 .add-review {
   text-align: right;
-  margin: 20px 0px;
 }
 
 .add-btn {
@@ -172,5 +297,12 @@ onMounted(() => {
 
 .content-content {
   margin-bottom: 0px;
+}
+
+.rate-avg {
+  word-spacing: -4px;
+}
+.fa-star {
+  color: #fa9200;
 }
 </style>

@@ -224,4 +224,24 @@ export default {
       console.error('Failed to load data', error.response.data);
     }
   },
+
+  async getRatingByItemId(itemId) {
+    try {
+      const { data } = await api.get(`/review/rating/${itemId}`);
+      console.log('rating list :', data);
+      return data;
+    } catch (error) {
+      console.error('Failed to load data', error.response.data);
+    }
+  },
+
+  async getRatingCountsByItemId(itemId) {
+    try {
+      const { data } = await api.get(`/review/rating-count/${itemId}`);
+      console.log('rating count list :', data);
+      return data;
+    } catch (error) {
+      console.error('Failed to load data', error.response.data);
+    }
+  },
 };
