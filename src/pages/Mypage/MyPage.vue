@@ -57,7 +57,9 @@
             >
           </li>
           <li><a href="#">회원정보수정</a></li>
-          <li><a href="#">배송 주소록</a></li>
+          <button @click="goToAddress" class="view-all-btn">
+            배송 주소록
+          </button>
           <br />
           <li>
             <button
@@ -88,8 +90,8 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
-import OrderHistory from './Mypage/OrderHistory.vue';
-import orderSummary from './Mypage/orderSummary.vue';
+import OrderHistory from './OrderHistory.vue';
+import orderSummary from './orderSummary.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -104,6 +106,12 @@ const logout = async () => {
 };
 const goToAllOrders = () => {
   router.push({ name: 'OrderList' });
+};
+const goToAddress = () => {
+  router.push({
+    name: 'Address',
+    query: { source: 'mypage' },
+  });
 };
 </script>
 
