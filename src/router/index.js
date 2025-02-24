@@ -25,6 +25,7 @@ import MyPage from '@/pages/Mypage/MyPage.vue';
 // import Category from '@/pages/Category.vue';
 // import ProductDetail from '@/pages/ProductDetail.vue';
 import Cart from '@/pages/CartPage.vue';
+
 import OrderComplete from '@/pages/OrderComplete.vue';
 import OrderDetail from '@/pages/Mypage/OrderDetail.vue';
 import OrderList from '@/pages/Mypage/OrderList.vue';
@@ -143,6 +144,13 @@ const routes = [
     name: 'UpdateReview',
     component: AddReview,
   },
+    
+        {
+        path: '/itemDetail/:id',
+        name: 'ItemDetail2',
+        component: Item,
+    },
+
 
   {
     path: '/findId',
@@ -211,33 +219,32 @@ const routes = [
     name: 'OrderList',
     component: OrderList,
   },
+
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes,
+    history: createWebHistory(),
+    routes,
 });
 
 // 전역 네비게이션 가드
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
+    const authStore = useAuthStore();
 
-  // 저장된 토큰을 불러와 인증 상태를 유지
-  if (!authStore.isAuthenticated) {
-    authStore.loadStoredToken();
-  }
+    // 저장된 토큰을 불러와 인증 상태를 유지
+    if (!authStore.isAuthenticated) {
+        authStore.loadStoredToken();
+    }
 
-  // 인증이 필요한 페이지 (예: MyPage)
-  const requiresAuth = to.matched.some((record) =>
-    record.path.startsWith('/mypage')
-  );
+    // 인증이 필요한 페이지 (예: MyPage)
+    const requiresAuth = to.matched.some((record) => record.path.startsWith('/mypage'));
 
-  if (requiresAuth && !authStore.isAuthenticated) {
-    // 인증이 필요한 페이지에 접근했지만 로그인되지 않은 경우
-    return next('/login');
-  }
+    if (requiresAuth && !authStore.isAuthenticated) {
+        // 인증이 필요한 페이지에 접근했지만 로그인되지 않은 경우
+        return next('/login');
+    }
 
-  next();
+    next();
 });
 
 export default router;
