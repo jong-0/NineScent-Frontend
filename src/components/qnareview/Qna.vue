@@ -2,22 +2,23 @@
   <div v-if="!isLoading">
     <div>
       <div class="qna-header">
-        <div class="title">QNA ({{ qnas.length }})</div>
+        <div class="title">QNA ({{ qnas.content.length }})</div>
         <div class="add-qna">
           <button class="add-btn" @click="addQna(itemId)">문의하기</button>
         </div>
       </div>
       <div class="qna-container">
-        <p class="no-content" v-if="qnas.length === 0">등록된 문의가 없습니다.</p>
+        <p class="no-content" v-if="qnas.content.length === 0">등록된 문의가 없습니다.</p>
         <ul class="qna-list" v-else>
           <div>
-            <li v-for="qna in qnas" :key="qna.qnaId" class="qna">
+            <li v-for="qna in qnas.content" :key="qna.qnaId" class="qna">
               <div class="question-header" @click="toggleAnswer(qna.questionId)">
                 <div>
                   <p class="content-category">{{ qna.qnaCategory }}</p>
-                  <p class="content-title">Qna 제목</p>
-                  <!-- <p>{{ qna.attachment }}</p> -->
+                  <p class="content-title">{{ qna.title }}</p>
                   <p class="content-content">{{ qna.content }}</p>
+                  <!-- <p>{{ qna.attachment }}</p> -->
+
                   <span>
                     <img class="review-image" src="@/assets/images/product2.jpg" alt="" />
                   </span>
@@ -79,6 +80,23 @@
           </div>
         </ul>
       </div>
+      <template v-if="qnas.content.length > 0">
+        <div class="paginate">
+          <vue-awesome-paginate
+            :total-items="qnas.totalElements"
+            :items-per-page="qnas.pageable.pageSize"
+            :max-pages-shown="qnas.totalPages"
+            :show-ending-buttons="false"
+            v-model="currentPage"
+            @click="handlePageChange"
+          >
+            <template #first-page-button><i class="fa-solid fa-backward-fast"></i></template>
+            <template #prev-button><i class="fa-solid fa-caret-left"></i></template>
+            <template #next-button><i class="fa-solid fa-caret-right"></i></template>
+            <template #last-page-button><i class="fa-solid fa-forward-fast"></i></template>
+          </vue-awesome-paginate>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -91,7 +109,12 @@ import faqnaReviewApi from '@/api/faqnaReviewApi';
 
 const route = useRoute();
 const router = useRouter();
-const qnas = ref([]);
+const qnas = ref({
+  content: [],
+  pageable: { pageNumber: 0, pageSize: 5 },
+  totalElements: 0,
+  totalPages: 0,
+});
 const answers = ref([]);
 const openStates = ref({});
 const newAnswers = ref({});
@@ -103,25 +126,30 @@ let userNo = 0;
 let isAdmin = false;
 
 const qnaId = route.params.qnaId;
-const itemId = route.params.itemId;
+const itemId = route.params.id;
 
 const isQnaOwner = (qna) => {
   return qna.userNo === userNo;
+};
+
+const currentPage = ref(1);
+const pageRequest = ref({ page: 0 });
+
+const handlePageChange = async (page) => {
+  currentPage.value = page;
+  pageRequest.value.page = page - 1;
+  await fetchQnaData();
 };
 
 const fetchQnaData = async () => {
   if (!itemId) return;
   isLoading.value = true;
   try {
-    const response = await faqnaReviewApi.getQnaByItemId(itemId);
+    const response = await faqnaReviewApi.getQnaPage(itemId, pageRequest.value.page);
     qnas.value = response;
-    answers.value = [];
 
-    for (const qna of response) {
-      if (qna.done) {
-        const answer = await getAnswerByQnaId(qna.questionId);
-        answers.value.push(...answer);
-      }
+    if (qnas.value.pageable) {
+      currentPage.value = qnas.value.pageable.pageNumber + 1;
     }
   } catch (error) {
     console.error('Error fetching qna data', error);
@@ -393,5 +421,9 @@ onMounted(() => {
 
 .title {
   font-size: 25px;
+}
+
+.paginate {
+  text-align: center;
 }
 </style>

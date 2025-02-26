@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div v-if="!isLoading">
     <h1>Review form</h1>
     <div class="item-container">
       <div class="item-photo">
         <p>{{ itemData.mainPhoto }}</p>
       </div>
       <div class="item-info">
-        <p>{{ itemData.itemSize }} {{ itemData.itemName }}</p>
+        <p>{{ itemData.itemName }} {{ itemData.itemSize }}ml</p>
         <p>{{ priceText }}</p>
       </div>
     </div>
@@ -31,6 +31,7 @@
       <input type="file" />
     </div>
     <div class="add-review">
+      <button class="cancel-btn" @click="cancel">취소</button>
       <button class="add-btn" @click="submitReview">등록</button>
     </div>
   </div>
@@ -46,6 +47,7 @@ import itemApi from '@/api/itemApi';
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const isLoading = ref(true);
 
 const reviewData = ref({
   itemId: 0,
@@ -64,7 +66,7 @@ const itemData = ref({
   mainPhoto: '',
 });
 
-const itemId = route.params.itemId;
+const itemId = route.params.id;
 const reviewId = route.params.reviewId;
 
 const setRating = (rating) => {
@@ -72,7 +74,9 @@ const setRating = (rating) => {
 };
 
 const formattedPrice = computed(() => {
-  return itemData.value.discountedPrice.toLocaleString();
+  return itemData.value.discountedPrice
+    ? itemData.value.discountedPrice.toLocaleString()
+    : itemData.value.price.toLocaleString();
 });
 
 const priceText = computed(() => {
@@ -83,12 +87,17 @@ const priceText = computed(() => {
 
 const fetchItemData = async () => {
   if (!itemId) return;
+  isLoading.value = true;
   try {
     const response = await itemApi.getItemById(itemId);
     itemData.value = response;
+    console.log('itemData', itemData.value);
+
     reviewData.value.itemId = itemId;
   } catch (error) {
     console.error('Error fetching item data', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -122,10 +131,15 @@ const submitReview = async () => {
       // 등록 모드
       await faqnaReviewApi.postReview(reviewData.value);
     }
-    router.push({ name: 'Item', params: { itemId } });
+    router.push({ name: 'ItemDetail', params: { id: itemId } });
   } catch (error) {
     console.error('Error submitting Review', error);
   }
+};
+
+const cancel = async () => {
+  if (!confirm('작성을 취소하시겠습니까?')) return;
+  router.push({ name: 'ItemDetail', params: { id: itemId } });
 };
 
 onMounted(() => {
@@ -198,6 +212,17 @@ onMounted(() => {
 }
 
 .add-btn:hover {
+  background: #f0f0f0;
+}
+
+.cancel-btn {
+  border-radius: 5px;
+  padding: 4px 15px;
+  background: #ffffff;
+  margin-right: 10px;
+}
+
+.cancel-btn:hover {
   background: #f0f0f0;
 }
 </style>

@@ -244,4 +244,24 @@ export default {
       console.error('Failed to load data', error.response.data);
     }
   },
+
+  async getReviewPage(itemId, page) {
+    try {
+      const { data } = await api.get(`/review/list/${itemId}?page=${page}`);
+      console.log('review list :', data);
+      return data;
+    } catch (error) {
+      console.error('Failed to load data', error.response.data);
+    }
+  },
+
+  async getQnaPage(itemId, page) {
+    try {
+      const { data } = await api.get(`/qna/list/${itemId}?page=${page}`);
+      console.log('qna list :', data);
+      return data;
+    } catch (error) {
+      console.error('Failed to load data', error.response.data);
+    }
+  },
 };
