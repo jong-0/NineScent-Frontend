@@ -19,22 +19,22 @@
               <i v-else class="fa-regular fa-star empty"></i>
             </span>
           </div>
-          <div>{{ reviews.length }}개의 후기</div>
+          <div>{{ reviews.totalElements }}개의 후기</div>
         </div>
         <div class="rating-chart">
           <BarChart :ratingCounts="ratingCounts" />
         </div>
       </div>
       <div class="review-header">
-        <div class="title">REVIEW ({{ reviews.length }})</div>
+        <div class="title">REVIEW ({{ reviews.totalElements }})</div>
         <div class="add-review">
           <button class="add-btn" @click="addReview(itemId)">리뷰등록</button>
         </div>
       </div>
       <div class="review-container">
-        <p class="no-content" v-if="reviews.length === 0">등록된 후기가 없습니다.</p>
+        <p class="no-content" v-if="reviews.content.length === 0">등록된 후기가 없습니다.</p>
         <ul class="review-list" v-else>
-          <li v-for="review in reviews" :key="review.reviewId" class="review">
+          <li v-for="review in reviews.content" :key="review.reviewId" class="review">
             <div>
               <p class="content-title">{{ review.name }} {{ formatDate(review.createdDate) }}</p>
               <p class="content-rate">
@@ -56,13 +56,30 @@
             </div>
           </li>
         </ul>
+        <template v-if="reviews.content.length > 0">
+          <div class="paginate">
+            <vue-awesome-paginate
+              :total-items="reviews.totalElements"
+              :items-per-page="reviews.pageable.pageSize"
+              :max-pages-shown="reviews.totalPages"
+              :show-ending-buttons="false"
+              v-model="currentPage"
+              @click="handlePageChange"
+            >
+              <template #first-page-button><i class="fa-solid fa-backward-fast"></i></template>
+              <template #prev-button><i class="fa-solid fa-caret-left"></i></template>
+              <template #next-button><i class="fa-solid fa-caret-right"></i></template>
+              <template #last-page-button><i class="fa-solid fa-forward-fast"></i></template>
+            </vue-awesome-paginate>
+          </div>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import faqnaReviewApi from '@/api/faqnaReviewApi';
@@ -72,24 +89,43 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
-const reviews = ref([]);
+const reviews = ref({
+  content: [],
+  pageable: { pageNumber: 0, pageSize: 5 },
+  totalElements: 0,
+  totalPages: 0,
+});
 const rating = ref(0);
 const isLoading = ref(true);
 const ratingCounts = ref({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
 
 let userNo = 0;
-const itemId = route.params.itemId;
+const itemId = route.params.id;
 
 const isReviewOwner = (review) => {
-  return review.userNo === userNo;
+  return review.content.userNo === userNo;
+};
+
+const currentPage = ref(1);
+const pageRequest = ref({ page: 0 });
+
+const handlePageChange = async (page) => {
+  currentPage.value = page;
+  pageRequest.value.page = page - 1;
+  await fetchReviewData();
 };
 
 const fetchReviewData = async () => {
   if (!itemId) return;
   isLoading.value = true;
   try {
-    const response = await faqnaReviewApi.getReviewByItemId(itemId);
+    const response = await faqnaReviewApi.getReviewPage(itemId, pageRequest.value.page);
     reviews.value = response;
+
+    if (reviews.value.pageable) {
+      currentPage.value = reviews.value.pageable.pageNumber + 1;
+    }
+    console.log('reviews', reviews.value);
   } catch (error) {
     console.error('Error fetching review data', error);
   } finally {
@@ -114,7 +150,7 @@ const addReview = (itemId) => {
 const editReview = (review) => {
   router.push({
     name: 'UpdateReview',
-    params: { itemId: itemId, reviewId: review.reviewId },
+    params: { itemId: itemId, reviewId: review.content.reviewId },
   });
 };
 
@@ -302,7 +338,12 @@ onMounted(() => {
 .rate-avg {
   word-spacing: -4px;
 }
+
 .fa-star {
   color: #fa9200;
+}
+
+.paginate {
+  text-align: center;
 }
 </style>

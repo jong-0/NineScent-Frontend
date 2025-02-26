@@ -3,6 +3,7 @@ import { createPinia } from 'pinia';
 import VueAwesomePaginate from 'vue-awesome-paginate';
 import 'vue-awesome-paginate/dist/style.css';
 
+import './assets/main.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 

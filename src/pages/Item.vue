@@ -9,9 +9,9 @@
         </div>
 
         <div class="product-info">
-          <h1>{{ product.itemName }}</h1>
+          <h1>{{ product.itemName }} {{ product.itemSize }}ml</h1>
           <p class="price">{{ formatPrice(product.price) }}원</p>
-          <p>{{ product.description }}</p>
+          <p>{{ product.itemDescription }}</p>
 
           <!-- 수량 선택 -->
           <div class="quantity-selector">

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="!isLoading">
     <h1>Qna form</h1>
     <div class="item-container">
       <div class="item-photo">
@@ -26,20 +26,21 @@
       <input
         class="title"
         type="text"
-        v-model="qnaData.content"
+        v-model="qnaData.title"
         placeholder="제목을 입력해주세요"
       /><br />
     </div>
     <textarea
       class="content"
       type="text"
-      v-model="qnaData.attachment"
+      v-model="qnaData.content"
       placeholder="문의할 내용을 입력해주세요"
     /><br />
     <div class="img-container">
       <input type="file" />
     </div>
     <div class="add-qna">
+      <button class="cancel-btn" @click="cancel">취소</button>
       <button class="add-btn" @click="submitQna">등록</button>
     </div>
   </div>
@@ -55,6 +56,7 @@ import itemApi from '@/api/itemApi';
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const isLoading = ref(true);
 
 const categories = ref(['배송', '재입고', '상품상세문의']);
 
@@ -77,7 +79,9 @@ const itemData = ref({
 });
 
 const formattedPrice = computed(() => {
-  return itemData.value.discountedPrice.toLocaleString();
+  return itemData.value.discountedPrice
+    ? itemData.value.discountedPrice.toLocaleString()
+    : itemData.value.price.toLocaleString();
 });
 
 const priceText = computed(() => {
@@ -86,17 +90,20 @@ const priceText = computed(() => {
     : `${formattedPrice.value}원`;
 });
 
-const itemId = route.params.itemId;
+const itemId = route.params.id;
 const questionId = route.params.questionId;
 
 const fetchItemData = async () => {
   if (!itemId) return;
+  isLoading.value = true;
   try {
     const response = await itemApi.getItemById(itemId);
     itemData.value = response;
     qnaData.value.itemId = itemId;
   } catch (error) {
     console.error('Error fetching item data', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -130,10 +137,15 @@ const submitQna = async () => {
       // 등록 모드
       await faqnaReviewApi.postQna(qnaData.value);
     }
-    router.push({ name: 'Item', params: { itemId } });
+    router.push({ name: 'ItemDetail', params: { id: itemId } });
   } catch (error) {
     console.error('Error submitting Qna', error);
   }
+};
+
+const cancel = async () => {
+  if (!confirm('작성을 취소하시겠습니까?')) return;
+  router.push({ name: 'ItemDetail', params: { id: itemId } });
 };
 
 onMounted(() => {
@@ -224,6 +236,17 @@ onMounted(() => {
 }
 
 .add-btn:hover {
+  background: #f0f0f0;
+}
+
+.cancel-btn {
+  border-radius: 5px;
+  padding: 4px 15px;
+  background: #ffffff;
+  margin-right: 10px;
+}
+
+.cancel-btn:hover {
   background: #f0f0f0;
 }
 </style>

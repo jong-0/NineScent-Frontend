@@ -1,0 +1,41 @@
+.paginate-buttons {
+  height: 40px;
+  width: 40px;
+  /* border-radius: 20px; */
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid white;
+  color: black;
+}
+
+.paginate-buttons:hover {
+  border-radius: 20px;
+  background-color: #eeeeee;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.paginate-buttons:active {
+  background-color: #eeeeee;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.pagination-item {
+  height: 40px;
+  width: 40px;
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid white;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-page {
+  border-radius: 20px;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
