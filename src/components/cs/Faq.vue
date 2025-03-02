@@ -15,8 +15,8 @@
   </div>
 
   <div class="faq-list">
-    <template v-if="faqs.length > 0">
-      <template v-for="faq in faqs" :key="faq.faqId">
+    <template v-if="faqs.content.length > 0">
+      <template v-for="faq in faqs.content" :key="faq.faqId">
         <!-- FAQ 질문 행 -->
         <div class="faq-items">
           <button class="faq-item" @click="toggleFaq(faq.faqId)">
@@ -50,6 +50,23 @@
       <div class="no-content">등록된 게시물이 없습니다.</div>
     </template>
   </div>
+  <template v-if="faqs.content.length > 0">
+    <div class="paginate">
+      <vue-awesome-paginate
+        :total-items="faqs.totalElements"
+        :items-per-page="faqs.pageable.pageSize"
+        :max-pages-shown="faqs.totalPages"
+        :show-ending-buttons="false"
+        v-model="currentPage"
+        @click="handlePageChange"
+      >
+        <template #first-page-button><i class="fa-solid fa-backward-fast"></i></template>
+        <template #prev-button><i class="fa-solid fa-caret-left"></i></template>
+        <template #next-button><i class="fa-solid fa-caret-right"></i></template>
+        <template #last-page-button><i class="fa-solid fa-forward-fast"></i></template>
+      </vue-awesome-paginate>
+    </div>
+  </template>
   <div v-if="isAdmin" class="add-faq">
     <button class="add-btn" @click="addFaq">글쓰기</button>
   </div>
@@ -65,7 +82,12 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const categories = ref([]);
-const faqs = ref([]);
+const faqs = ref({
+  content: [],
+  pageable: { pageNumber: 0, pageSize: 10 },
+  totalElements: 0,
+  totalPages: 0,
+});
 const selectedCategory = ref(null);
 const openedFaqId = ref(null);
 const openStates = ref({});
@@ -81,6 +103,15 @@ const categoryLabels = {
   as: '교환/환불/반품',
 };
 
+const currentPage = ref(1);
+const pageRequest = ref({ page: 0 });
+
+const handlePageChange = async (page) => {
+  currentPage.value = page;
+  pageRequest.value.page = page - 1;
+  await fetchFaqs(selectedCategory.value);
+};
+
 const fetchFaqCategories = async () => {
   try {
     const response = await faqnaReviewApi.getFaqCategories();
@@ -94,12 +125,25 @@ const fetchFaqCategories = async () => {
 
 const fetchFaqs = async (category) => {
   try {
-    const response = await faqnaReviewApi.getFaqs(category);
+    const response = await faqnaReviewApi.getFaqPage(category, pageRequest.value.page);
     faqs.value = response;
+
+    if (faqs.value.pageable) {
+      currentPage.value = faqs.value.pageable.pageNumber + 1;
+    }
   } catch (error) {
     console.error('Error fetching list', error);
   }
 };
+
+// const fetchFaqs = async (category) => {
+//   try {
+//     const response = await faqnaReviewApi.getFaqs(category);
+//     faqs.value = response;
+//   } catch (error) {
+//     console.error('Error fetching list', error);
+//   }
+// };
 
 const setCategory = (category) => {
   selectedCategory.value = category;
@@ -153,7 +197,6 @@ onMounted(() => {
 .faq-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
 }
@@ -171,6 +214,8 @@ onMounted(() => {
   padding: 10px 15px;
   text-align: left;
   cursor: pointer;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .faq-item:hover {
@@ -183,6 +228,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #f5f5f5;
 }
 
 .list-icon {
@@ -242,5 +290,10 @@ button.active {
 
 .fa-chevron-down.rotated {
   transform: rotate(180deg);
+}
+
+.paginate {
+  margin-top: 10px;
+  text-align: center;
 }
 </style>

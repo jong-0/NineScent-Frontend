@@ -264,4 +264,14 @@ export default {
       console.error('Failed to load data', error.response.data);
     }
   },
+
+  async getFaqPage(category, page) {
+    try {
+      const { data } = await api.get(`/faq/list/${category}?page=${page}`);
+      console.log('faq list :', data);
+      return data;
+    } catch (error) {
+      console.error('Failed to load data', error.response.data);
+    }
+  },
 };
