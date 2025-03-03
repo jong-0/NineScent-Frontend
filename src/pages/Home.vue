@@ -6,6 +6,15 @@
             <p>Your journey to elegance starts here with us.</p>
             <button class="shop-now">Shop Now</button>
         </section>
+        <section class="carousel">
+          <div class="carousel-right">
+            <p></p>
+          </div>
+          <div class="carousel-left">
+            <p>            </p>
+          </div>
+
+        </section>
         <section class="featured-products">
             <h2>Featured Products</h2>
             <div class="product-list">
@@ -61,13 +70,18 @@ const featuredProducts = [
 }
 
 .hero {
-    min-height: 750px;
-    text-align: center;
-    padding: 30px 20px;
-    background-color: #ececec;
-    background-size: cover;
-    background-position: center;
+    width: 100%;
+    height: 100vh; /* 화면 전체 높이로 설정 */
+    background-size: cover; /* 배경 이미지가 꽉 차도록 설정 */
+    background-position: center center; /* 이미지 중앙 정렬 */
     background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 50px;
+    text-align: center;
+    color: white;
 }
 
 .hero h1 {
