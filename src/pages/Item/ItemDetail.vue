@@ -6,19 +6,23 @@
                 <div class="product-images">
                     <!-- 하드코딩 -->
                     <!-- <img :src="product.photo" alt="Product Image" class="main-image" /> -->
-                    <img class="main-image" src="@/assets/images/product2.jpg" alt="" />
+                    <!-- <img class="main-image" src="@/assets/images/product2.jpg" alt="" /> -->
 
                     <!--백엔 연동(수정중 지우지 말아주세요) -->
                     <!-- <img :src="generateImageUrl(product.categoryId, product.itemName, 'main')" class="main-image" alt="Product Image" /> -->
                     <!-- <img :src="encodeUrl(product.mainPhoto)" class="main-image" alt="Product Image" /> -->
-                    <!-- <img v-if="product.mainPhoto" :src="product.mainPhoto" class="main-image" alt="Product Image" /> -->
+
+                    <img v-if="product.mainPhoto" :src="product.mainPhoto" class="main-image" alt="Product Image" />
                     <!-- <img v-else src="@/assets/images/product1.jpg" class="main-image" alt="Default Image" /> -->
                 </div>
 
                 <div class="product-info">
-                    <h1>{{ product.itemName }} {{ product.itemSize }}</h1>
-                    <p class="price">{{ formatPrice(product.price) }}원</p>
-                    <p>{{ product.itemDescription }}</p>
+                    <div class="product-info-wrapper">
+                        <h1>{{ product.itemName }} {{ product.itemSize }}</h1>
+                        <p class="price">{{ formatPrice(product.price) }}원</p>
+                        <p>{{ product.itemTitle }}</p>
+                        <p>{{ product.itemDescription }}</p>
+                    </div>
 
                     <!-- 수량 선택 -->
                     <div class="quantity-selector">
@@ -61,8 +65,12 @@
                     <!-- 상세 정보 -->
                     <div id="detail" class="detail-info">
                         <p>{{ product.titleName }}</p>
-                        <!-- <img v-if="product.detail" :src="product.detail" alt="Product Detail Image" /> -->
-                        <img src="@/assets/images/product2.jpg" alt="" />
+                        <!-- <img v-if="product.detailPhoto" :src="product.detailPhoto" alt="Product Detail Image" /> -->
+                        <!-- <img src="@/assets/images/product2.jpg" alt="" /> -->
+
+                        <div class="detail-images">
+                            <img v-for="(photo, index) in detailImages" :key="index" :src="encodeUrl(photo)" alt="Product Detail Image" class="detail-image" />
+                        </div>
                     </div>
 
                     <div id="review" class="section">
@@ -101,6 +109,12 @@ const encodeUrl = (url) => {
     return url ? encodeURI(url) : '@/assets/images/default.jpg';
 };
 
+// ✅ computed 속성 사용: 항상 배열 형태로 반환
+const detailImages = computed(() => {
+    console.log('product.detailPhoto 확인:', product.value.detailPhoto);
+    return product.value.detailPhotos || []; // `null` 또는 `undefined`일 경우 빈 배열 반환
+});
+
 // ✅ watch()로 mainPhoto 변경 감지
 watch(
     () => product.value.mainPhoto,
@@ -114,11 +128,11 @@ const fetchProduct = async () => {
     isLoading.value = true;
     try {
         const data = await itemApi.getItemById(productId);
-        console.log(data);
+        console.log('📌 백엔드에서 받은 상품 데이터:', data);
         product.value = data;
-        console.log('product 상태 :', product.value);
+        console.log('📌 product 상태 확인:', product.value);
     } catch (error) {
-        console.error('상품 데이터 로딩 실패:', error);
+        console.error('❌ 상품 데이터 로딩 실패:', error);
     } finally {
         isLoading.value = false;
     }
@@ -222,13 +236,26 @@ onMounted(() => {
     margin-top: 50px;
 }
 
+.product-images {
+    width: 500px;
+    height: 500px;
+    /* margin-right: 10px; */
+    overflow: hidden;
+}
 .main-image {
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
+    object-fit: contain;
 }
 
 .product-info {
     padding: 20px;
+}
+
+.product-info-wrapper {
+    margin-bottom: 90px;
 }
 
 .product-info h1 {
