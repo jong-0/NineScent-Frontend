@@ -1,11 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
+import Perfume from '@/pages/Perfume.vue';
 import ItemDetail from '@/pages/Item/ItemDetail.vue';
 import ItemList from '@/pages/Item/ItemList.vue';
+
 import Home from '@/pages/Home.vue';
 import Login from '@/pages/member/Login.vue';
 import Signup from '@/pages/member/Signup.vue';
+import JoinComplete from '@/pages/member/JoinComplete.vue';
 import FindId from '@/pages/member/FindId.vue';
 import FindPw from '@/pages/member/FindPw.vue';
 
@@ -13,17 +16,14 @@ import Checkout from '@/pages/order/Checkout.vue';
 import Address from '@/pages/Address/Address.vue';
 import AddAddress from '@/pages/Address/AddAddress.vue';
 import UpdateAddress from '@/pages/Address/UpdateAddress.vue';
-import CSCenter from '@/pages/CSCenter.vue';
-import AddFaq from '@/pages/AddFaq.vue';
-import Perfume from '@/pages/Perfume.vue';
-import Etc from '@/pages/Etc.vue';
+import CSCenter from '@/pages/CS/CSCenter.vue';
+import AddFaq from '@/pages/CS/AddFaq.vue';
+
 import Item from '@/pages/Item.vue';
-import AddQna from '@/pages/AddQna.vue';
-import AddReview from '@/pages/AddReview.vue';
+import AddQna from '@/pages/CS/AddQna.vue';
+import AddReview from '@/pages/CS/AddReview.vue';
 
 import MyPage from '@/pages/Mypage/MyPage.vue';
-// import Category from '@/pages/Category.vue';
-// import ProductDetail from '@/pages/ProductDetail.vue';
 import Cart from '@/pages/order/CartPage.vue';
 
 import OrderComplete from '@/pages/order/OrderComplete.vue';
@@ -60,6 +60,11 @@ const routes = [
         path: '/signup',
         name: 'Signup',
         component: Signup,
+    },
+    {
+        path: '/joinComplete',
+        name: 'JoinComplete',
+        component: JoinComplete,
     },
 
     {
@@ -113,11 +118,6 @@ const routes = [
         path: '/perfume',
         name: 'Perfume',
         component: Perfume,
-    },
-    {
-        path: '/etc',
-        name: 'Etc',
-        component: Etc,
     },
     {
         path: '/item/:itemId',

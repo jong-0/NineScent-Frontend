@@ -115,13 +115,14 @@ onMounted(() => {
     height: auto;
     min-height: 320px;
     overflow: hidden;
+    aspect-ratio: 1/1;
 }
 
 .item-image {
     width: 100%;
     height: auto;
-    max-height: 400px;
-    object-fit: contain;
+    /* max-height: 400px; */
+    object-fit: cover;
     transition: opacity 0.3s ease-in-out;
 }
 

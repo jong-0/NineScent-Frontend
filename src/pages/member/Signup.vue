@@ -100,8 +100,11 @@
 </template>
 <script setup>
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import DaumAddress from '@/components/user/DaumAddressFInd.vue';
+
+const router = useRouter();
 
 //지역번호 리스트 (배열을 이용해 동적 생성)
 const areaCodes = ref(['02', '031', '032', '033', '041', '042', '043', '044', '051', '052', '053', '054', '055', '061', '062', '063', '064']);
@@ -230,11 +233,85 @@ const isFormValid = computed(() => {
     );
 });
 
+// const handleSubmit = async () => {
+//     try {
+//         const formattedData = {
+//             name: form.value.name,
+//             userId: form.value.username, // 백엔드 DTO와 맞추기 위해 userId로 변경
+//             password: form.value.password,
+//             email: form.value.email,
+//             address: form.value.address,
+//             phone: `${form.value.phone.prefix}-${form.value.phone.middle}-${form.value.phone.last}`,
+//             birth: `${form.value.birth.year}-${String(form.value.birth.month).padStart(2, '0')}-${String(form.value.birth.day).padStart(2, '0')}`, // yyyy-MM-dd 형식
+//         };
+
+//         const response = await axios.post('/api/user/join', formattedData);
+//         console.log('회원가입 성공:', response.data);
+//         alert('회원가입이 완료되었습니다.');
+//         router.push('/joinComplete');
+//     } catch (error) {
+//         console.error('회원가입 오류:', error);
+//         alert('회원가입에 실패하였습니다.');
+//     }
+// };
+
+// const handleSubmit = async () => {
+//     try {
+//         const formattedData = {
+//             name: form.value.name,
+//             userId: form.value.username, // 백엔드 DTO와 맞추기 위해 userId로 변경
+//             password: form.value.password,
+//             email: form.value.email,
+//             address: form.value.address,
+//             phone: `${form.value.phone.prefix}-${form.value.phone.middle}-${form.value.phone.last}`,
+//             birth: `${form.value.birth.year}-${String(form.value.birth.month).padStart(2, '0')}-${String(form.value.birth.day).padStart(2, '0')}`, // yyyy-MM-dd 형식
+//         };
+
+//         const response = await axios.post('/api/user/join', formattedData);
+
+//         // ❗ 정상 응답인지 확인
+//         if (response.status !== 200) {
+//             throw new Error('회원가입 실패: 서버 응답 오류');
+//         }
+
+//         console.log('회원가입 성공:', response.data);
+//         alert('회원가입이 완료되었습니다.');
+
+//         // 회원가입 성공 후 JoinComplete 페이지로 이동
+//         router.push('/joinComplete');
+//     } catch (error) {
+//         console.error('회원가입 오류:', error);
+//         alert('회원가입에 실패하였습니다.');
+//     }
+// };
+
 const handleSubmit = async () => {
     try {
-        const response = await axios.post('/api/member/join', form.value);
+        const formattedData = {
+            name: form.value.name,
+            userId: form.value.username, // 백엔드 DTO와 맞추기 위해 userId로 변경
+            password: form.value.password,
+            email: form.value.email,
+            address: form.value.address || null, // 주소가 비어있으면 null로 처리
+            phone: form.value.phone.middle && form.value.phone.last ? `${form.value.phone.prefix}-${form.value.phone.middle}-${form.value.phone.last}` : null, // 전화번호가 입력되지 않으면 null
+            mobile: form.value.mobile.middle && form.value.mobile.last ? `${form.value.mobile.prefix}-${form.value.mobile.middle}-${form.value.mobile.last}` : null, // 휴대전화가 입력되지 않으면 null
+            birth:
+                form.value.birth.year && form.value.birth.month && form.value.birth.day
+                    ? `${form.value.birth.year}-${String(form.value.birth.month).padStart(2, '0')}-${String(form.value.birth.day).padStart(2, '0')}`
+                    : null, // 생년월일이 비어있으면 null
+        };
+
+        const response = await axios.post('/api/user/join', formattedData);
+
+        if (response.status !== 200) {
+            throw new Error('회원가입 실패: 서버 응답 오류');
+        }
+
         console.log('회원가입 성공:', response.data);
         alert('회원가입이 완료되었습니다.');
+
+        // 회원가입 성공 후 JoinComplete 페이지로 이동
+        router.push('/joinComplete');
     } catch (error) {
         console.error('회원가입 오류:', error);
         alert('회원가입에 실패하였습니다.');
