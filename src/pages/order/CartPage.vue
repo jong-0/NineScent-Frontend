@@ -77,7 +77,7 @@ import { useRouter } from 'vue-router';
 const authStore = useAuthStore();
 const router = useRouter();
 
-// ✅ 장바구니 데이터 (백엔드 연동)
+//    장바구니 데이터 (백엔드 연동)
 const cartProducts = ref([]);
 
 //   장바구니 불러오기
@@ -122,16 +122,16 @@ const isAllSelected = computed({
     },
 });
 
-// ✅ 선택된 상품 개수
+//    선택된 상품 개수
 const selectedItemCount = computed(() => cartProducts.value.filter((product) => product.selected).length);
 
-// ✅ 총 상품 금액 계산 (선택된 상품만)
+//    총 상품 금액 계산 (선택된 상품만)
 const subtotal = computed(() => cartProducts.value.filter((product) => product.selected).reduce((acc, product) => acc + product.price * product.quantity, 0));
 
-// ✅ 총 할인 금액 계산 (선택된 상품만)
+//    총 할인 금액 계산 (선택된 상품만)
 const totalDiscount = computed(() => cartProducts.value.filter((product) => product.selected).reduce((acc, product) => acc + product.discount * product.quantity, 0));
 
-// ✅ 배송비 계산 (10만 원 이상 무료 배송)
+//    배송비 계산 (10만 원 이상 무료 배송)
 const shipping = computed(() => (subtotal.value >= 100000 ? 0 : 3000));
 
 //  개별 상품 선택 상태 업데이트
@@ -139,7 +139,7 @@ function updateSelected(index, isSelected) {
     cartProducts.value[index].selected = isSelected;
 }
 
-// ✅ 수량 업데이트 (Vue 리렌더링 + API 연동)
+//    수량 업데이트 (Vue 리렌더링 + API 연동)
 const updateQuantity = async (index, itemId, newQuantity, action) => {
     console.log(`🛠 수량 변경 감지: ${newQuantity}, Action: ${action}`);
 
@@ -150,10 +150,10 @@ const updateQuantity = async (index, itemId, newQuantity, action) => {
     };
     cartProducts.value = [...cartProducts.value];
 
-    // ✅ API 호출
+    //    API 호출
     try {
         const response = await cartApi.updateItem(authStore.userNo, itemId, newQuantity, action);
-        console.log('✅ 수량 변경 완료:', response);
+        console.log('   수량 변경 완료:', response);
     } catch (error) {
         console.error('❌ 수량 변경 실패:', error);
     }

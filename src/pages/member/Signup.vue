@@ -233,58 +233,6 @@ const isFormValid = computed(() => {
     );
 });
 
-// const handleSubmit = async () => {
-//     try {
-//         const formattedData = {
-//             name: form.value.name,
-//             userId: form.value.username, // 백엔드 DTO와 맞추기 위해 userId로 변경
-//             password: form.value.password,
-//             email: form.value.email,
-//             address: form.value.address,
-//             phone: `${form.value.phone.prefix}-${form.value.phone.middle}-${form.value.phone.last}`,
-//             birth: `${form.value.birth.year}-${String(form.value.birth.month).padStart(2, '0')}-${String(form.value.birth.day).padStart(2, '0')}`, // yyyy-MM-dd 형식
-//         };
-
-//         const response = await axios.post('/api/user/join', formattedData);
-//         console.log('회원가입 성공:', response.data);
-//         alert('회원가입이 완료되었습니다.');
-//         router.push('/joinComplete');
-//     } catch (error) {
-//         console.error('회원가입 오류:', error);
-//         alert('회원가입에 실패하였습니다.');
-//     }
-// };
-
-// const handleSubmit = async () => {
-//     try {
-//         const formattedData = {
-//             name: form.value.name,
-//             userId: form.value.username, // 백엔드 DTO와 맞추기 위해 userId로 변경
-//             password: form.value.password,
-//             email: form.value.email,
-//             address: form.value.address,
-//             phone: `${form.value.phone.prefix}-${form.value.phone.middle}-${form.value.phone.last}`,
-//             birth: `${form.value.birth.year}-${String(form.value.birth.month).padStart(2, '0')}-${String(form.value.birth.day).padStart(2, '0')}`, // yyyy-MM-dd 형식
-//         };
-
-//         const response = await axios.post('/api/user/join', formattedData);
-
-//         // ❗ 정상 응답인지 확인
-//         if (response.status !== 200) {
-//             throw new Error('회원가입 실패: 서버 응답 오류');
-//         }
-
-//         console.log('회원가입 성공:', response.data);
-//         alert('회원가입이 완료되었습니다.');
-
-//         // 회원가입 성공 후 JoinComplete 페이지로 이동
-//         router.push('/joinComplete');
-//     } catch (error) {
-//         console.error('회원가입 오류:', error);
-//         alert('회원가입에 실패하였습니다.');
-//     }
-// };
-
 const handleSubmit = async () => {
     try {
         const formattedData = {

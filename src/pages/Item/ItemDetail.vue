@@ -104,18 +104,18 @@ const product = ref({});
 const quantity = ref(1);
 const productId = route.params.id;
 
-// ✅ URL 인코딩 함수
+//    URL 인코딩 함수
 const encodeUrl = (url) => {
     return url ? encodeURI(url) : '@/assets/images/default.jpg';
 };
 
-// ✅ computed 속성 사용: 항상 배열 형태로 반환
+//    computed 속성 사용: 항상 배열 형태로 반환
 const detailImages = computed(() => {
     console.log('product.detailPhoto 확인:', product.value.detailPhoto);
     return product.value.detailPhotos || []; // `null` 또는 `undefined`일 경우 빈 배열 반환
 });
 
-// ✅ watch()로 mainPhoto 변경 감지
+//    watch()로 mainPhoto 변경 감지
 watch(
     () => product.value.mainPhoto,
     (newVal) => {
@@ -123,7 +123,7 @@ watch(
     }
 );
 
-// ✅ 백엔드 API에서 데이터 가져오기
+//    백엔드 API에서 데이터 가져오기
 const fetchProduct = async () => {
     isLoading.value = true;
     try {
@@ -198,7 +198,7 @@ const buyNow = async () => {
     }
 };
 
-// ✅ 페이지 로드 시 상품 데이터 가져오기
+//    페이지 로드 시 상품 데이터 가져오기
 onMounted(() => {
     fetchProduct();
 });

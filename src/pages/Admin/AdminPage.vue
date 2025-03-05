@@ -20,8 +20,12 @@
             <aside class="sidebar">
                 <ul>
                     <li><a style="font-size: 17px; font-weight: bold">상품 관리</a></li>
-                    <button @click="changeComponent('ProductList')" class="all-button">상품 조회</button>
-                    <button @click="changeComponent('ProductAdd')" class="all-button">상품 등록</button>
+                    <li>
+                        <button @click="changeComponent('ProductList')" class="all-button">상품 조회</button>
+                    </li>
+                    <li>
+                        <button @click="changeComponent('ProductAdd')" class="all-button">상품 등록</button>
+                    </li>
                     <li><a href="#">재고 관리</a></li>
                     <br />
                     <li>
@@ -47,7 +51,7 @@
             </aside>
 
             <section class="component-box">
-                <p>DashBoard</p>
+                <component :is="selectedComponent"></component>
 
                 <section class="recent-orders"></section>
             </section>

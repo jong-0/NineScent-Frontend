@@ -232,14 +232,14 @@ const removeItem = async () => {
 }
 
 @media (max-width: 767px) {
-    /* ✅ 상품 아이템을 줄바꿈 없이 유지 */
+    /*    상품 아이템을 줄바꿈 없이 유지 */
     .product-item {
-        flex-wrap: nowrap; /* ✅ 한 줄 유지 */
+        flex-wrap: nowrap; /*    한 줄 유지 */
         align-items: center;
         gap: 8px;
     }
 
-    /* ✅ 이미지 크기 축소 */
+    /*    이미지 크기 축소 */
     .product-image-container {
         width: 70px;
         height: 70px;
@@ -250,26 +250,26 @@ const removeItem = async () => {
         height: 100%;
     }
 
-    /* ✅ 상품 정보 크기 조정 */
+    /*    상품 정보 크기 조정 */
     .product-info {
         min-width: 90px;
         flex-grow: 1;
         text-align: left;
     }
 
-    /* ✅ 수량 입력 필드 크기 조정 */
+    /*    수량 입력 필드 크기 조정 */
     .quantity-input {
         width: 40px;
         min-width: 40px;
     }
 
-    /* ✅ 가격 및 삭제 버튼 정렬 */
+    /*    가격 및 삭제 버튼 정렬 */
     .price-area {
         min-width: 80px;
         text-align: right;
     }
 
-    /* ✅ 삭제 버튼 크기 및 정렬 */
+    /*    삭제 버튼 크기 및 정렬 */
     .delete-button {
         font-size: 12px;
         width: auto;
