@@ -27,7 +27,7 @@
                         <hr v-if="index !== 0" class="horizontal dark my-3" />
                         <ProductCartItem
                             :itemId="product.itemId"
-                            :imageUrl="product.imageUrl"
+                            :imageUrl="product.thumbSrc"
                             :thumbAlt="product.thumbAlt"
                             :title="product.title"
                             :color="product.color"
@@ -76,39 +76,6 @@ import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
-// // ✅ 장바구니 데이터 (샘플 데이터)
-// const cartProducts = ref([
-//   {
-//     thumbSrc: new URL(
-//       '../assets/images/product1.jpg',
-//       import.meta.url
-//     ).href,
-//     thumbAlt: 'Product 1',
-//     title: 'Classic T-Shirt',
-//     color: 'Black',
-//     size: 'M',
-//     price: 25000,
-//     discount: 5000,
-//     stock: 3,
-//     quantity: 1,
-//     selected: false,
-//   },
-//   {
-//     thumbSrc: new URL(
-//       '../assets/images/product2.jpg',
-//       import.meta.url
-//     ).href,
-//     thumbAlt: 'Product 2',
-//     title: 'Denim Jacket',
-//     color: 'Blue',
-//     size: 'L',
-//     price: 75000,
-//     discount: 10000,
-//     stock: 5,
-//     quantity: 1,
-//     selected: false,
-//   },
-// ]);
 
 // ✅ 장바구니 데이터 (백엔드 연동)
 const cartProducts = ref([]);
@@ -128,14 +95,14 @@ const loadCart = async () => {
             thumbSrc: item.mainPhoto || new URL('../assets/images/product1.jpg', import.meta.url).href, // null 방지 (기본 이미지 설정 가능)
             thumbAlt: item.itemName,
             title: item.itemName,
-            size: item.size || '-', // size가 없을 경우 "-" 표시
+            size: item.itemSize || '-', // size가 없을 경우 "-" 표시
             price: item.price,
             stock: item.stock || 10, // stock이 없을 경우 기본값 10
             quantity: item.quantity,
             discount: item.discount || 0, // 할인 정보 추가
             selected: item.isSelected ?? true, // 기본값 true
         }));
-        console.log(cartProducts);
+        console.log(cartProducts.value);
     } catch (error) {
         console.error('장바구니 데이터를 불러오는 중 오류 발생:', error);
     }
@@ -144,6 +111,7 @@ const loadCart = async () => {
 //  페이지 로딩 시 장바구니 불러오기
 onMounted(() => {
     loadCart();
+    window.cartProducts = cartProducts;
 });
 
 //  전체 선택 상태
