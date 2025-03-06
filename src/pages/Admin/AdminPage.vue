@@ -7,59 +7,53 @@
                 </div>
                 <div class="profile-details">
                     <h2>{{ authStore.userName }} 님</h2>
-                    <p>Hug 등급</p>
-                    <small>1원 이상 구매 시 <strong>5%</strong>를 추가 적립받을 수 있습니다.</small>
-                    <!-- <p class="remaining-points">
-                            [Hug 등급을 유지하기 위해 남은 구매금액은 <strong>0원</strong> 입니다.]<br />
-                            송금 기준에 따른 예상 구매금액: <strong>24,000원</strong>
-                        </p> -->
+                    <p>현재 처리해야할 QnA는 00건 입니다.</p>
+                    <small>현재 가능한 기능은 <strong>상품 추가</strong>입니다.</small>
                 </div>
             </div>
         </div>
     </section>
 
-    <div class="mypage-container">
-        <!-- 상단 정보 -->
-
-        <!-- 메인 콘텐츠 -->
+    <div class="admin-container">
         <div class="main-content">
             <!-- 사이드 메뉴 -->
             <aside class="sidebar">
                 <ul>
+                    <li><a style="font-size: 17px; font-weight: bold">상품 관리</a></li>
                     <li>
-                        <a style="font-size: 17px; font-weight: bold">쇼핑 관련</a>
+                        <button @click="changeComponent('ProductList')" class="all-button">상품 조회</button>
                     </li>
-                    <button @click="goToAllOrders" class="all-button">주문조회</button>
-                    <li><a href="#">쿠폰</a></li>
-                    <li><a href="#">적립금</a></li>
+                    <li>
+                        <button @click="changeComponent('ProductAdd')" class="all-button">상품 등록</button>
+                    </li>
+                    <li><a href="#">재고 관리</a></li>
                     <br />
                     <li>
-                        <a style="font-size: 17px; font-weight: bold">나의 활동</a>
+                        <a style="font-size: 17px; font-weight: bold">주문 관리</a>
                     </li>
                     <li><a href="#">관심상품</a></li>
                     <li><a href="#">게시글 관리</a></li>
                     <br />
                     <li>
-                        <a style="font-size: 17px; font-weight: bold">회원 정보</a>
+                        <a style="font-size: 17px; font-weight: bold">배송 관리</a>
                     </li>
                     <li><a href="#">회원정보수정</a></li>
                     <button @click="goToAddress" class="all-button">배송 주소록</button>
                     <br />
+                    <br />
+                    <li>
+                        <a style="font-size: 17px; font-weight: bold">QnA 관리</a>
+                    </li>
                     <li>
                         <button @click.prevent="logout" class="all-button">로그아웃</button>
                     </li>
                 </ul>
             </aside>
 
-            <!-- 📌 주문 상태 요약 -->
-            <section class="order-and-recent">
-                <p>최근 주문 현황(1개월 내)</p>
-                <orderSummary />
+            <section class="component-box">
+                <component :is="selectedComponent"></component>
 
-                <!-- 📌 최근 주문 내역 (최신 10개) -->
-                <section class="recent-orders">
-                    <OrderHistory />
-                </section>
+                <section class="recent-orders"></section>
             </section>
         </div>
     </div>
@@ -69,11 +63,25 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
-import OrderHistory from './OrderHistory.vue';
-import orderSummary from './OrderSummary.vue';
+import { ref, shallowRef } from 'vue';
+
+import AdminDashboard from '@/components/Admin/AdminDashboard.vue';
+import ProductList from '@/components/Admin/ProductList.vue';
+import ProductAdd from '@/components/Admin/ProductAdd.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+const selectedComponent = shallowRef(AdminDashboard);
+
+const changeComponent = (componentName) => {
+    const components = {
+        ProductList,
+        ProductAdd,
+    };
+
+    selectedComponent.value = components[componentName] || AdminDashboard;
+};
 
 const logout = async () => {
     try {
