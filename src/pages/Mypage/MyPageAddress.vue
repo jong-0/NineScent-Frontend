@@ -24,14 +24,6 @@
         </div>
 
         <div class="button-group">
-          <!--    체크아웃 페이지에서는 '선택' 버튼 표시 -->
-
-          <button
-            class="btn select"
-            @click="selectAddress(address.addrNo)"
-          >
-            선택
-          </button>
           <button
             class="btn edit"
             @click="goUpdateAddress(address.addrNo)"
@@ -59,9 +51,8 @@
       <button class="btn add" @click="goAddAddress">
         배송지 추가
       </button>
-
-      <!-- 체크아웃 페이지에서는 '돌아가기'를 체크아웃으로 -->
-      <button class="btn back" @click="goToCheckout">
+      <!-- 마이페이지에서는 '돌아가기'를 마이페이지로 -->
+      <button class="btn back" @click="goBack">
         돌아가기
       </button>
     </div>
@@ -93,12 +84,12 @@ const fetchAddressList = async () => {
 
 // 주소 추가
 const goAddAddress = () => {
-  router.push({ name: 'AddAddress' });
+  router.push({ name: 'MyPageAddAddress' });
 };
 // 주소 수정
 const goUpdateAddress = (addrNo) => {
   router.push({
-    name: 'UpdateAddress',
+    name: 'MyPageUpdateAddress',
     params: { addrNo },
   });
 };
@@ -122,31 +113,16 @@ const deleteAddress = async (addrNo) => {
   }
 };
 
-// 선택한 주소 업데이트
-const selectAddress = async (addrNo) => {
-  if (!addrNo) {
-    const defaultAddress = addresses.value.find(
-      (address) => address.isDefault === true
-    );
-    if (defaultAddress) {
-      addrNo = defaultAddress.addrNo;
-    } else {
-      console.error('기본 배송지를 찾을 수 없습니다.');
-      return;
-    }
-  }
-  try {
-    sessionStorage.setItem('selectedAddress', addrNo);
-    router.replace({ name: 'Checkout' });
-  } catch (error) {
-    console.error('Error updating order address:', error);
+// 마이페이지에서 돌아가기
+const goBack = () => {
+  if (authStore.isAuthenticated) {
+    router.push(`/mypage/${authStore.userId}`);
+  } else {
+    alert('로그인이 필요합니다.');
+    router.push('/login');
   }
 };
 
-// 체크아웃에서 돌아가기
-const goToCheckout = () => {
-  router.push({ name: 'Checkout' });
-};
 onMounted(() => {
   fetchAddressList();
 });
@@ -165,11 +141,6 @@ onMounted(() => {
   font-size: 1.8rem;
   margin-bottom: 20px;
 }
-
-/* .subtitle {
-  font-size: 1.4rem;
-  margin-bottom: 15px;
-} */
 
 /* 배송지 리스트 */
 .address-list {
