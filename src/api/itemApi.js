@@ -55,4 +55,14 @@ export default {
       console.error('Failed to delete item', error.response.data);
     }
   },
+
+  async recommendItem() {
+    try {
+      const { data } = await api.get(`/items/recommend`);
+      console.log('recommended item :', data);
+      return data;
+    } catch (error) {
+      console.error('Failed to load recommend item', error.response.data);
+    }
+  },
 };
