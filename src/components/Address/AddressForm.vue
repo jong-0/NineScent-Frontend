@@ -64,6 +64,7 @@
       <input
         type="text"
         v-model="addressData.addrDetail"
+        id="addrDetail"
         placeholder="상세주소"
         class="input-field"
         required
@@ -106,8 +107,7 @@
 </template>
 
 <script setup>
-import { isNumber } from 'lodash';
-import { ref, watch, defineProps, defineEmits } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
   mode: { type: String, required: true }, // "add" or "edit"

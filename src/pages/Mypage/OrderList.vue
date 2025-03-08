@@ -26,11 +26,16 @@
               v-for="item in order.orderItems"
               :key="item.itemId"
             >
-              <span class="item-name"
-                >📦 {{ item.itemName }}</span
+              <img
+                :src="item.mainPhoto"
+                alt="상품 이미지"
+                class="product-image"
+              />
+
+              <span class="item-name">
+                {{ item.itemName }}</span
               >
-              <span class="item-info"
-                >💰
+              <span class="item-info">
                 {{
                   item.discountedPrice.toLocaleString()
                 }}원 × {{ item.quantity }}개</span
@@ -64,7 +69,7 @@ const hasMore = ref(true);
 const authStore = useAuthStore();
 const ordersData = ref([]);
 
-// ✅ 날짜 배열을 변환하여 YYYY-MM-DD HH:mm 형식으로 표시
+//    날짜 배열을 변환하여 YYYY-MM-DD HH:mm 형식으로 표시
 const formatDate = (dateArray) => {
   if (!dateArray || dateArray.length < 3)
     return '날짜 정보 없음';
@@ -79,7 +84,7 @@ const formatDate = (dateArray) => {
   )}`;
 };
 
-// ✅ 주문을 날짜별로 그룹화 (YYYY-MM-DD 기준)
+//    주문을 날짜별로 그룹화 (YYYY-MM-DD 기준)
 const groupedOrders = computed(() => {
   const grouped = {};
   ordersData.value.forEach((order) => {
@@ -184,7 +189,13 @@ onMounted(() => {
   padding: 0;
   margin: 0;
 }
-
+.product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 15px;
+  border-radius: 8px;
+}
 .order-details li {
   display: flex;
   justify-content: space-between;
@@ -216,7 +227,7 @@ onMounted(() => {
   background-color: #0056b3;
 }
 
-/* ✅ 반응형 스타일 */
+/*    반응형 스타일 */
 @media (max-width: 768px) {
   .order-history {
     max-width: 90%;

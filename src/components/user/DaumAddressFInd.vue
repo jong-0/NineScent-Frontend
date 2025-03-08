@@ -22,13 +22,13 @@ import { ref, defineEmits, onMounted } from 'vue';
 
 const emit = defineEmits(['address-selected']);
 
-// ✅ Vue 반응형 데이터
+//    Vue 반응형 데이터
 const addrZipcode = ref('');
 const addrAddress = ref('');
 const addrDetail = ref('');
 const addrExtraDetail = ref('');
 
-// ✅ Daum API를 스크립트로 로드 (onMounted에서 실행)
+//    Daum API를 스크립트로 로드 (onMounted에서 실행)
 onMounted(() => {
     if (window.daum && window.daum.Postcode) {
         return;
@@ -40,7 +40,7 @@ onMounted(() => {
     document.head.appendChild(script);
 });
 
-// ✅ Daum 우편번호 검색 팝업 실행
+//    Daum 우편번호 검색 팝업 실행
 const openAddressPopup = () => {
     if (!window.daum || !window.daum.Postcode) {
         alert('주소 검색 API가 로드되지 않았습니다. 잠시 후 다시 시도해주세요.');
@@ -72,12 +72,12 @@ const openAddressPopup = () => {
                 }
             }
 
-            // ✅ Vue 반응형 데이터에 값 저장
+            //    Vue 반응형 데이터에 값 저장
             addrZipcode.value = data.zonecode;
             addrAddress.value = addr;
             addrExtraDetail.value = extraAddr;
 
-            // ✅ 부모 컴포넌트로 데이터 전달
+            //    부모 컴포넌트로 데이터 전달
             emit('address-selected', {
                 addrZipcode: data.zonecode,
                 addrAddress: addr,
@@ -90,7 +90,7 @@ const openAddressPopup = () => {
 </script>
 
 <style scoped>
-/* ✅ 전체 컨테이너 */
+/*    전체 컨테이너 */
 .address-container {
     display: flex;
     flex-direction: column;
@@ -98,13 +98,13 @@ const openAddressPopup = () => {
     width: 100%;
 }
 
-/* ✅ 우편번호 입력과 버튼을 가로 정렬 */
+/*    우편번호 입력과 버튼을 가로 정렬 */
 .zipcode-container {
     display: flex;
     gap: 10px;
 }
 
-/* ✅ 우편번호 입력 필드 */
+/*    우편번호 입력 필드 */
 .zipcode-input {
     flex: none;
     width: 25%; /* 더 작은 크기로 조정 */
@@ -115,7 +115,7 @@ const openAddressPopup = () => {
     cursor: not-allowed;
 }
 
-/* ✅ 우편번호 버튼 */
+/*    우편번호 버튼 */
 .zip-code-button {
     padding: 10px 15px;
     border: 1px solid #333;
@@ -129,7 +129,7 @@ const openAddressPopup = () => {
     background-color: #ddd;
 }
 
-/* ✅ 주소 입력 필드 */
+/*    주소 입력 필드 */
 .address-input {
     width: 100%;
     padding: 10px;
@@ -139,13 +139,13 @@ const openAddressPopup = () => {
     cursor: not-allowed;
 }
 
-/* ✅ 상세 주소만 활성화 */
+/*    상세 주소만 활성화 */
 .address-input:not([readonly]) {
     background-color: white;
     cursor: text;
 }
 
-/* ✅ 기본 주소, 나머지 주소, 참고 주소 필드 크기 확장 */
+/*    기본 주소, 나머지 주소, 참고 주소 필드 크기 확장 */
 .full-width {
     flex: 1;
     width: 100%;

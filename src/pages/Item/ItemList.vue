@@ -122,7 +122,8 @@ onMounted(() => {
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 320px;
+  min-height: 220px;
+
   overflow: hidden;
   aspect-ratio: 1/1;
 }

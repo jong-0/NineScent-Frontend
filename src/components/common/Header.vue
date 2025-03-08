@@ -1,3 +1,31 @@
+<template>
+  <header class="header">
+    <router-link to="/" class="logo">NINESCENT</router-link>
+    <nav class="navigation">
+      <ul>
+        <li><a href="/">BEST</a></li>
+        <!-- <li><a href="#" @click="perfumeList">PERFUME</a></li> -->
+        <li><a href="/items">PERFUME</a></li>
+        <li><a href="#">ABOUT</a></li>
+      </ul>
+    </nav>
+    <nav class="navigation-icon">
+      <ul>
+        <li>
+          <a href="javascript:void(0);" @click="goToMyPage">
+            <font-awesome-icon :icon="['fas', 'user']" />
+          </a>
+        </li>
+        <li>
+          <a href="/cart">
+            <font-awesome-icon :icon="['fas', 'cart-shopping']" />
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+</template>
+
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { onMounted } from 'vue';
@@ -9,11 +37,18 @@ const router = useRouter();
 
 // 마이페이지 이동 로직
 const goToMyPage = () => {
-  if (authStore.isAuthenticated) {
-    router.push(`/mypage/${authStore.userId}`);
-  } else {
+  if (!authStore.isAuthenticated) {
     alert('로그인이 필요합니다.');
     router.push('/login');
+    return;
+  }
+
+  //관리자 계정일 경우 관리 대시보드로 이동
+  if (authStore.role === 'ROLE_ADMIN') {
+    router.push('/admin');
+  } else {
+    //일반 사용자의 경우 마이페이지로 이동
+    router.push(`/mypage/${authStore.userId}`);
   }
 };
 

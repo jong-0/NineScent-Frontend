@@ -1,5 +1,20 @@
 <template>
   <div class="order-history">
+    <!-- 📌 주문 상태 요약 -->
+    <section class="order-info">
+      <div class="order-status">
+        <div
+          v-for="(count, status) in orderSummary"
+          :key="status"
+        >
+          <p>
+            {{ translatedStatus[status] || status }}
+          </p>
+          <h4>{{ count }}</h4>
+        </div>
+      </div>
+    </section>
+
     <h3 class="order-history-title">최근 주문 내역</h3>
 
     <div
@@ -27,11 +42,15 @@
               v-for="item in order.orderItems"
               :key="item.itemId"
             >
-              <span class="item-name"
-                >📦 {{ item.itemName }}</span
-              >
-              <span class="item-info"
-                >💰
+              <img
+                :src="item.mainPhoto"
+                alt="상품 이미지"
+                class="product-image"
+              />
+              <span class="item-name">{{
+                item.itemName
+              }}</span>
+              <span class="item-info">
                 {{
                   item.discountedPrice.toLocaleString()
                 }}원 × {{ item.quantity }}개</span
@@ -58,7 +77,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const ordersData = ref([]);
 
-// ✅ 날짜 배열을 변환하여 YYYY-MM-DD HH:mm 형식으로 표시
+//    날짜 배열을 변환하여 YYYY-MM-DD HH:mm 형식으로 표시
 const formatDate = (dateArray) => {
   if (!dateArray || dateArray.length < 3)
     return '날짜 정보 없음';
@@ -73,7 +92,7 @@ const formatDate = (dateArray) => {
   )}`;
 };
 
-// ✅ 주문을 날짜별로 그룹화 (YYYY-MM-DD 기준)
+//    주문을 날짜별로 그룹화 (YYYY-MM-DD 기준)
 const groupedOrders = computed(() => {
   const grouped = {};
   ordersData.value.forEach((order) => {
@@ -103,7 +122,41 @@ const goToAllOrders = () => {
   router.push({ name: 'OrderList' });
 };
 
-onMounted(fetchOrders);
+const orderSummary = ref({
+  pendingPayment: 0,
+  preparingDelivery: 0,
+  // shipping: 0,
+  delivered: 0,
+  canceled: 0,
+});
+
+// 상태를 한글로 변환하는 computed 속성
+const translatedStatus = computed(() => ({
+  pendingPayment: '입금 대기 중',
+  preparingDelivery: '배송 준비 중',
+  // shipping: '배송 중',
+  delivered: '배송 완료',
+  canceled: '취소 / 반품 / 교환',
+}));
+
+// 📌 주문 상태 개수 조회
+const fetchOrderSummary = async () => {
+  try {
+    const response = await mypageApi.getOrderSummary(
+      authStore.userNo
+    );
+    if (response) orderSummary.value = response;
+  } catch (error) {
+    console.error(
+      '주문 상태 요약을 불러올 수 없습니다.',
+      error
+    );
+  }
+};
+onMounted(() => {
+  fetchOrderSummary();
+  fetchOrders();
+});
 </script>
 
 <style scoped>
@@ -165,7 +218,13 @@ onMounted(fetchOrders);
   padding: 0;
   margin: 0;
 }
-
+.product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 15px;
+  border-radius: 8px;
+}
 .order-details li {
   display: flex;
   justify-content: space-between;
@@ -196,8 +255,25 @@ onMounted(fetchOrders);
 .view-all-btn:hover {
   background-color: #0056b3;
 }
+.order-info {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
 
-/* ✅ 반응형 스타일 */
+.order-status,
+.return-status {
+  display: flex;
+  gap: 20px;
+}
+
+.order-status div,
+.return-status div {
+  text-align: center;
+}
+
+/*    반응형 스타일 */
 @media (max-width: 768px) {
   .order-history {
     max-width: 90%;
