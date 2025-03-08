@@ -1,9 +1,9 @@
 <template>
   <div>
     <div class="img-header">
-      <img class="header" src="@/assets/images/l1.png" alt="banner" />
-      <img class="header" src="@/assets/images/l2.png" alt="banner" />
-      <img class="header" src="@/assets/images/l3.png" alt="banner" />
+      <img class="header" src="@/assets/images/r1.png" alt="banner" />
+      <img class="header" src="@/assets/images/r2.png" alt="banner" />
+      <img class="header" src="@/assets/images/r3.png" alt="banner" />
     </div>
     <div class="grid-container">
       <div
@@ -14,9 +14,6 @@
         @mouseover="setHover(index, true)"
         @mouseleave="setHover(index, false)"
       >
-        <!-- <img :src="item.imageUrl" :alt="item.itemName" class="item-image" /> -->
-        <!-- <img class="item-image" src="@/assets/images/product1.jpg" alt="" /> -->
-        <!-- <img :src="hoverIndex === index && item.mainPhoto ? item.mainPhoto : defaultImage" :alt="item.itemName" class="item-image" /> -->
         <div class="image-wrapper">
           <img :src="defaultImage" :alt="item.itemName" class="item-image default" />
           <img
@@ -25,6 +22,7 @@
             class="item-image hover"
             :class="{ active: hoverIndex === index }"
           />
+          <div class="item-tag">BEST</div>
         </div>
 
         <p class="item-name">{{ item.itemName }} {{ item.itemSize }}</p>
@@ -50,10 +48,10 @@ const hoverIndex = ref(null);
 
 const fetchItems = async () => {
   try {
-    const response = await itemApi.getItems();
+    const response = await itemApi.recommendItem();
     items.value = response;
   } catch (error) {
-    console.error('Error fetching list', error.message);
+    console.error('Error fetching recommended items', error.message);
   }
 };
 
@@ -122,8 +120,7 @@ onMounted(() => {
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 220px;
-
+  min-height: 320px;
   overflow: hidden;
   aspect-ratio: 1/1;
 }
@@ -177,6 +174,19 @@ onMounted(() => {
 
 .item-name {
   margin-top: 15px;
+}
+
+.item-tag {
+  position: absolute;
+  /* top: 5px;
+  left: 5px; */
+  top: 0;
+  left: 0;
+  padding: 5px 10px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  font-weight: bold;
+  z-index: 3;
 }
 
 .img-header {
