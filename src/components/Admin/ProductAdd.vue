@@ -13,9 +13,9 @@
                     </option>
                 </select>
 
-                <select v-model="form.subCategoryId">
+                <select v-model="form.subCategoryId" @change="console.log('📌 선택된 subCategoryId:', form.subCategoryId)">
                     <option value="">하위 카테고리 선택</option>
-                    <option v-for="sub in subCategories" :key="sub.id" :value="sub.id">
+                    <option v-for="sub in subCategories" :key="sub.subCategoryId" :value="sub.subCategoryId">
                         {{ sub.subCategoryName }}
                     </option>
                 </select>
@@ -48,7 +48,7 @@
             <!--  상품 설명 -->
             <div class="form-group">
                 <label>상품 설명</label>
-                <textarea v-model="form.itemDescription" required></textarea>
+                <textarea v-model="form.itemDesc" required></textarea>
             </div>
 
             <!-- 대표 이미지 -->
@@ -123,17 +123,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, toRaw } from 'vue';
 import axios from 'axios';
 
 // 상태 관리
-const form = ref({
+const form = reactive({
     categoryId: '',
     subCategoryId: '',
     itemName: '',
     itemSize: '',
     itemTitle: '',
-    itemDescription: '',
+    itemDesc: '',
     price: '',
     stock: '',
     mainPhoto: null,
@@ -160,6 +160,34 @@ const previewDetailPhotos = ref([]);
 const mainPhotoName = ref('');
 const detailPhotoNames = ref([]);
 
+const resetForm = () => {
+    form.categoryId = '';
+    form.subCategoryId = '';
+    form.itemName = '';
+    form.itemSize = '';
+    form.itemTitle = '';
+    form.itemDescription = '';
+    form.price = '';
+    form.stock = '';
+    form.mainPhoto = null;
+    form.detailPhotos = [];
+    form.discountRate = '';
+    form.discountedPrice = '';
+    form.discountStart = '';
+    form.discountEnd = '';
+    form.discountDescription = '';
+
+    // 이미지 미리보기 초기화
+    previewMainPhoto.value = null;
+    previewDetailPhotos.value = [];
+    mainPhotoName.value = '';
+    detailPhotoNames.value = [];
+
+    // 파일 입력 필드 초기화
+    if (mainPhotoInput.value) mainPhotoInput.value.value = '';
+    if (detailPhotosInput.value) detailPhotosInput.value.value = '';
+};
+
 // 카테고리 불러오기
 const fetchCategories = async () => {
     try {
@@ -173,21 +201,26 @@ const fetchCategories = async () => {
 
 //    하위 카테고리 불러오기
 const fetchSubCategories = async () => {
-    console.log('✔️ fetchSubCategories 실행됨! 선택된 카테고리 ID:', form.value.categoryId);
+    console.log('✔️ fetchSubCategories 실행됨! 선택된 카테고리 ID:', form.categoryId);
 
-    if (!form.value.categoryId) {
-        console.log('❌ 카테고리가 선택되지 않았습니다.');
+    if (!form.categoryId) {
+        console.log('카테고리가 선택되지 않았습니다.');
         subCategories.value = [];
+        form.subCategoryId = '';
         return;
     }
 
     try {
-        const response = await axios.get(`/api/categories/${form.value.categoryId}/subcategories`);
+        const response = await axios.get(`/api/categories/${form.categoryId}/subcategories`);
         subCategories.value = response.data;
 
-        console.log('   서브 카테고리 데이터:', subCategories.value);
+        console.log('서브 카테고리 데이터:', subCategories.value);
+
+        form.subCategoryId = '';
     } catch (error) {
         console.error('❌ 하위 카테고리 불러오기 실패:', error);
+        subCategories.value = [];
+        form.subCategoryId = '';
     }
 };
 
@@ -202,7 +235,7 @@ const calculateDiscountedPrice = () => {
 const handleMainPhotoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-        form.value.mainPhoto = file;
+        form.mainPhoto = file;
         previewMainPhoto.value = URL.createObjectURL(file);
         mainPhotoName.value = file.name;
     }
@@ -210,7 +243,7 @@ const handleMainPhotoUpload = (event) => {
 
 // 대표 이미지 삭제
 const removeMainPhoto = () => {
-    form.value.mainPhoto = null;
+    form.mainPhoto = null;
     previewMainPhoto.value = null;
     mainPhotoName.value = '';
     mainPhotoInput.value.value = ''; // input 초기화
@@ -218,14 +251,14 @@ const removeMainPhoto = () => {
 
 // 상세 이미지 업로드
 const handleDetailPhotosUpload = (event) => {
-    form.value.detailPhotos = Array.from(event.target.files);
-    previewDetailPhotos.value = form.value.detailPhotos.map((file) => URL.createObjectURL(file));
-    detailPhotoNames.value = form.value.detailPhotos.map((file) => file.name);
+    form.detailPhotos = Array.from(event.target.files);
+    previewDetailPhotos.value = form.detailPhotos.map((file) => URL.createObjectURL(file));
+    detailPhotoNames.value = form.detailPhotos.map((file) => file.name);
 };
 
 // 상세 이미지 삭제
 const removeDetailPhoto = (index) => {
-    form.value.detailPhotos.splice(index, 1);
+    form.detailPhotos.splice(index, 1);
     previewDetailPhotos.value.splice(index, 1);
     detailPhotoNames.value.splice(index, 1);
 
@@ -238,18 +271,59 @@ const removeDetailPhoto = (index) => {
 const handleSubmit = async () => {
     try {
         const formData = new FormData();
-        Object.keys(form.value).forEach((key) => {
-            if (form.value[key]) formData.append(key, form.value[key]);
+        const rawForm = toRaw(form); // ✅ `reactive` 객체를 일반 객체로 변환
+
+        // Object.keys(rawForm).forEach((key) => {
+        //     if (rawForm[key] !== null && rawForm[key] !== undefined) {
+        //         // ✅ null/undefined 방지
+        //         formData.append(key, rawForm[key]);
+        //     }
+        // });
+
+        // ✅ 텍스트 데이터 추가
+        Object.keys(rawForm).forEach((key) => {
+            if (rawForm[key] !== null && rawForm[key] !== undefined && key !== 'detailPhotos') {
+                formData.append(key, rawForm[key]);
+            }
         });
 
-        const response = await axios.post('/api/items/create', formData);
+        // ✅ 대표 이미지 추가
+        if (form.mainPhoto) {
+            formData.append('mainImage', form.mainPhoto);
+        }
+
+        // ✅ 상세 이미지 여러 개 추가
+        if (form.detailPhotos.length > 0) {
+            form.detailPhotos.forEach((file, index) => {
+                formData.append(`detailImages`, file); // 서버에서 배열로 받도록 설정
+            });
+        }
+
+        console.log('📌 전송 데이터:', [...formData.entries()]); // ✅ 콘솔에 전송 데이터 출력
+
+        const response = await axios.post('http://localhost:8080/api/items/create', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
         alert('상품이 등록되었습니다.');
         console.log(response.data);
+
+        resetForm();
     } catch (error) {
         console.error('상품 등록 실패:', error);
+        if (error.response) {
+            console.error('📌 서버 응답 데이터:', error.response.data); // ✅ 서버 오류 응답 출력
+        }
         alert('상품 등록에 실패했습니다.');
     }
 };
+
+watch(
+    () => form.categoryId,
+    (newCategoryId) => {
+        console.log('📌 categoryId 변경됨:', newCategoryId);
+        form.subCategoryId = ''; // ✅ categoryId 변경 시 subCategoryId 초기화 (자동 선택 X)
+    }
+);
 
 // 카테고리 데이터 로드
 fetchCategories();
