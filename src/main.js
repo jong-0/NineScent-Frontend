@@ -6,6 +6,7 @@ import 'vue-awesome-paginate/dist/style.css';
 import './assets/main.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
+import LazyPlugin from 'vue3-lazy';
 
 import App from './App.vue';
 import './plugins/axios';
@@ -24,5 +25,4 @@ app.use(createPinia());
 app.use(VueAwesomePaginate);
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(router);
-
 app.mount('#app');
