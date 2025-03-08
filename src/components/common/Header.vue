@@ -3,7 +3,7 @@
     <router-link to="/" class="logo">NINESCENT</router-link>
     <nav class="navigation">
       <ul>
-        <li><a href="/">BEST</a></li>
+        <li><a href="/best">BEST</a></li>
         <!-- <li><a href="#" @click="perfumeList">PERFUME</a></li> -->
         <li><a href="/items">PERFUME</a></li>
         <li><a href="#">ABOUT</a></li>
@@ -82,35 +82,6 @@ onMounted(() => {
   });
 });
 </script>
-
-<template>
-  <header class="header">
-    <router-link to="/" class="logo">NINESCENT</router-link>
-    <nav class="navigation">
-      <ul>
-        <li><a href="/recommend">BEST</a></li>
-        <!-- <li><a href="#" @click="perfumeList">PERFUME</a></li> -->
-        <li><a href="/items">PERFUME</a></li>
-        <li><a href="#">ABOUT</a></li>
-      </ul>
-    </nav>
-    <nav class="navigation-icon">
-      <ul>
-        <li>
-          <a href="javascript:void(0);" @click="goToMyPage">
-            <font-awesome-icon :icon="['fas', 'user']" />
-          </a>
-        </li>
-        <li>
-          <a href="/cart">
-            <font-awesome-icon :icon="['fas', 'cart-shopping']" />
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </header>
-</template>
-
 <style scoped>
 .header {
   height: 60px;
