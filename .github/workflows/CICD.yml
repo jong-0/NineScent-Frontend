@@ -45,6 +45,9 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > Seoul.pem
           chmod 600 Seoul.pem
 
+          echo "${{ secrets.EC2_KNOWN_HOST }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
           ssh -i Seoul.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
           sudo rm -rf /usr/share/nginx/html/*
           EOF
