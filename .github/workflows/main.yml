@@ -33,13 +33,14 @@ jobs:
     # 2. 의존성 설치
     - name: Install Dependencies
       run: |
+        pnpm install
         pnpm add @popperjs/core
         pnpm add @vue/runtime-dom
         pnpm add vue-demi
         pnpm add @vue/devtools-api
         pnpm add @vue/devtools-kit
-        pnpm install
-      
+        pnpm add @vue/runtime-core
+        
     # 3. 프론트엔드 빌드
     - name: Build Frontend
       run: pnpm run build
