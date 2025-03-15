@@ -43,6 +43,7 @@ jobs:
         pnpm add @vue/shared
         pnpm add @vue/devtools-shared
         pnpm add perfect-debounce
+        pnpm add hookable
         
     # 3. 프론트엔드 빌드
     - name: Build Frontend
