@@ -71,7 +71,7 @@ const formattedPrice = (price) => {
 };
 
 const priceText = (item) => {
-  if (item.discountRate > 0) {
+  if (item.discountRate > 0 && item.discountRate !== null) {
     return `${item.discountRate}% ${formattedPrice(item.discountedPrice)}원`;
   } else {
     return `${formattedPrice(item.price)}원`;
