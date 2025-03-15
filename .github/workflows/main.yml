@@ -12,22 +12,21 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # Node 버전 지정 (GitHub Actions에서 Node 버전이 20)
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18.x
+    # # Node 버전 지정 (GitHub Actions에서 Node 버전이 20)
+    # - name: Setup Node.js
+    #   uses: actions/setup-node@v3
+    #   with:
+    #     node-version: 18.x
         
     # 1. 캐시 클린 및 패키지 정리
     - name: Clear NPM Cache
       run: |
         rm -rf node_modules
-        rm -f package-lock.json
         npm cache clean --force
         
-    # 2. 의존성 설치 (package-lock.json 기반 정확하게)
+    # 2. 의존성 설치
     - name: Install Dependencies
-      run: npm ci
+      run: npm install
       
     # 3. 프론트엔드 빌드
     - name: Build Frontend
