@@ -36,6 +36,7 @@ jobs:
         pnpm add @popperjs/core
         pnpm add @vue/runtime-dom
         pnpm add vue-demi
+        pnpm add @vue/devtools-api
         pnpm install
       
     # 3. 프론트엔드 빌드
