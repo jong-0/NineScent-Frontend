@@ -41,6 +41,7 @@ jobs:
         pnpm add @vue/devtools-kit
         pnpm add @vue/runtime-core
         pnpm add @vue/shared
+        pnpm add @vue/devtools-shared
         
     # 3. 프론트엔드 빌드
     - name: Build Frontend
