@@ -45,6 +45,7 @@ jobs:
         pnpm add perfect-debounce
         pnpm add hookable
         pnpm add birpc
+        pnpm add @vue/reactivity
         
     # 3. 프론트엔드 빌드
     - name: Build Frontend
