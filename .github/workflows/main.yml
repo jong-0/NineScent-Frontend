@@ -34,6 +34,7 @@ jobs:
     - name: Install Dependencies
       run: |
         pnpm add @popperjs/core
+        pnpm add @vue/runtime-dom
         pnpm install
       
     # 3. 프론트엔드 빌드
