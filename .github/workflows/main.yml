@@ -46,6 +46,7 @@ jobs:
         pnpm add hookable
         pnpm add birpc
         pnpm add @vue/reactivity
+        pnpm add @kurkle/color
         
     # 3. 프론트엔드 빌드
     - name: Build Frontend
