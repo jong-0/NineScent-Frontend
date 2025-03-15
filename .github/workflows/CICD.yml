@@ -3,11 +3,12 @@ name: Deploy Vue3 Frontend to EC2
 on:
   push:
     branches:
-      - main
-      - develop
+      - 'main'
+      - 'develop'
   pull_request:
     branches:
-      - develop
+      - 'main'
+      - 'develop'
 
 jobs:
   build:
