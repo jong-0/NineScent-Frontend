@@ -17,6 +17,12 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 18.x
+
+    # pnpm 설치 및 캐시 자동 관리
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8 # 최신 안정 버전
         
     # 1. 캐시 클린 및 패키지 정리
     - name: Clear NPM Cache
