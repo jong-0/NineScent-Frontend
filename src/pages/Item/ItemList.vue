@@ -29,7 +29,6 @@
           </div>
   
           <p class="item-name">{{ item.itemName }} {{ item.itemSize }}</p>
-          <p class="item-price">{{ priceText(item) }}</p>
         </div>
       </div>
     </div>
@@ -64,18 +63,6 @@ const fetchItems = async () => {
 
 const selectItem = (itemId) => {
   router.push({ name: 'ItemDetail', params: { id: itemId } });
-};
-
-const formattedPrice = (price) => {
-  return price.toLocaleString();
-};
-
-const priceText = (item) => {
-  if (item.discountRate > 0 && item.discountRate !== null) {
-    return `${item.discountRate}% ${formattedPrice(item.discountedPrice)}원`;
-  } else {
-    return `${formattedPrice(item.price)}원`;
-  }
 };
 
 const setHover = (index, isHovered) => {
