@@ -26,11 +26,11 @@ jobs:
         
     # 2. 의존성 설치
     - name: Install Dependencies
-      run: npm install --legacy-peer-deps
+      run: pnpm install
       
     # 3. 프론트엔드 빌드
     - name: Build Frontend
-      run: npm run build
+      run: pnpm run build
 
     # 4. 배포
     - name: Deploy to EC2
