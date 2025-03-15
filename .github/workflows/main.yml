@@ -12,6 +12,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    # Node 버전 지정 (GitHub Actions에서 Node 버전이 20)
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+        
     # 1. 캐시 클린 및 패키지 정리
     - name: Clear NPM Cache
       run: |
