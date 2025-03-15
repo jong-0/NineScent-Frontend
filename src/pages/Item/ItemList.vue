@@ -51,6 +51,7 @@ const hoverIndex = ref(null);
 // const hoverImage =
 
 const fetchItems = async () => {
+  isLoading.value = true;
   try {
     const response = await itemApi.getItems();
     items.value = response;
