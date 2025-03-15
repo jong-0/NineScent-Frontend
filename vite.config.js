@@ -6,20 +6,21 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [vue(), vueDevTools()],
-    resolve: {
-        alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url)),
-        },
-        strictExports: true,
-        preserveSymlinks: true,
+  plugins: [vue(), vueDevTools()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    server: {
-        proxy: {
-            '/api': {
-                target: 'http://localhost:8080',
-                // changeOrigin: true,
-            },
-        },
+    strictExports: true,
+    preserveSymlinks: true,
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://13.125.170.208:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
     },
+  },
 });
