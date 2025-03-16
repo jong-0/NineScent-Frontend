@@ -103,13 +103,14 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import DaumAddress from '@/components/user/DaumAddressFInd.vue';
+import { checkUsername, checkEmail, registerUser } from '@/api/memberApi';
 
 const router = useRouter();
 
 //지역번호 리스트 (배열을 이용해 동적 생성)
 const areaCodes = ref(['02', '031', '032', '033', '041', '042', '043', '044', '051', '052', '053', '054', '055', '061', '062', '063', '064']);
 
-const signupType = ref('personal');
+// const signupType = ref('personal');
 const form = ref({
     username: '',
     password: '',
@@ -147,21 +148,21 @@ const validateUsername = async () => {
     if (!form.value.username.trim()) {
         usernameError.value = '아이디를 입력하세요.';
         showError.value.username = true;
-    } else {
-        try {
-            const response = await axios.get(`/api/user/checkusername/${form.value.username}`);
-            if (!response.data) {
-                usernameError.value = ''; // 사용 가능
-                showError.value.username = false;
-            } else {
-                usernameError.value = '이미 사용 중인 아이디입니다.';
-                showError.value.username = true;
-            }
-        } catch (error) {
-            console.error('아이디 중복 검사 오류:', error);
-            usernameError.value = '아이디 확인 중 오류가 발생했습니다.';
+        return;
+    }
+    try {
+        const isDuplicate = await checkUsername(form.value.username);
+        if (isDuplicate) {
+            usernameError.value = '이미 사용 중인 아이디입니다.';
             showError.value.username = true;
+        } else {
+            usernameError.value = ''; // 사용 가능
+            showError.value.username = false;
         }
+    } catch (error) {
+        console.error('아이디 중복 검사 오류:', error);
+        usernameError.value = '아이디 확인 중 오류가 발생했습니다.';
+        showError.value.username = true;
     }
 };
 
@@ -185,8 +186,6 @@ const validatePasswordMatch = () => {
         passwordError.value = '';
         showError.value.password = false;
     }
-
-    // setTimeout(() => (showError.value.password = false), 3000);
 };
 
 // 이메일 중복 검사
@@ -197,27 +196,27 @@ const validateEmail = async () => {
     if (!email) {
         emailError.value = '이메일을 입력하세요.';
         showError.value.email = true;
-    } else if (!emailPattern.test(email)) {
+        return;
+    }
+    if (!emailPattern.test(email)) {
         emailError.value = '올바른 이메일 형식이 아닙니다.';
         showError.value.email = true;
-    } else {
-        try {
-            const response = await axios.get(`/api/user/checkemail/${email}`);
-            if (!response.data) {
-                emailError.value = ''; // 사용 가능
-                showError.value.email = false;
-            } else {
-                emailError.value = '이미 사용 중인 이메일입니다.';
-                showError.value.email = true;
-            }
-        } catch (error) {
-            console.error('이메일 중복 검사 오류:', error);
-            emailError.value = '이메일 확인 중 오류가 발생했습니다.';
-            showError.value.email = true;
-        }
+        return;
     }
-
-    // setTimeout(() => (showError.value.email = false), 3000);
+    try {
+        const isDuplicate = await checkEmail(email);
+        if (isDuplicate) {
+            emailError.value = '이미 사용 중인 이메일입니다.';
+            showError.value.email = true;
+        } else {
+            emailError.value = ''; // 사용 가능
+            showError.value.email = false;
+        }
+    } catch (error) {
+        console.error('이메일 중복 검사 오류:', error);
+        emailError.value = '이메일 확인 중 오류가 발생했습니다.';
+        showError.value.email = true;
+    }
 };
 
 // 회원가입 버튼 활성화 조건
@@ -233,6 +232,7 @@ const isFormValid = computed(() => {
     );
 });
 
+// 회원가입 처리
 const handleSubmit = async () => {
     try {
         const formattedData = {
@@ -249,13 +249,9 @@ const handleSubmit = async () => {
                     : null, // 생년월일이 비어있으면 null
         };
 
-        const response = await axios.post('/api/user/join', formattedData);
+        const response = await registerUser(formattedData);
 
-        if (response.status !== 200) {
-            throw new Error('회원가입 실패: 서버 응답 오류');
-        }
-
-        console.log('회원가입 성공:', response.data);
+        console.log('회원가입 성공:', response);
         alert('회원가입이 완료되었습니다.');
 
         // 회원가입 성공 후 JoinComplete 페이지로 이동
