@@ -1,6 +1,7 @@
 // src/stores/authStore.js
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { loginUser, logoutUser } from '@/api/memberApi';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -15,10 +16,14 @@ export const useAuthStore = defineStore('auth', {
     actions: {
         async login(username, password) {
             try {
-                const response = await axios.post('/api/auth/login', {
+                const response = await loginUser({
                     userId: username,
                     password,
                 });
+
+                if (!response || !response.data) {
+                    throw new Error('로그인 응답 데이터가 없음');
+                }
 
                 const { token, userId, userNo, name, email, role } = response.data;
 
@@ -46,7 +51,7 @@ export const useAuthStore = defineStore('auth', {
 
         async logout() {
             try {
-                await axios.post('/api/auth/logout');
+                await logoutUser();
 
                 this.token = null;
                 this.userId = null;

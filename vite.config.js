@@ -6,21 +6,20 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [vue(), vueDevTools()],
-    resolve: {
-        alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url)),
-        },
-        strictExports: true,
-        preserveSymlinks: true,
+  plugins: [vue(), vueDevTools()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    server: {
-        proxy: {
-          '/api': {
-            target: 'http://localhost:8080',  // 백엔드 서버 주소
-            changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, '/api')
-          },
-        },
+    strictExports: true,
+    preserveSymlinks: true,
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
+  },
 });
