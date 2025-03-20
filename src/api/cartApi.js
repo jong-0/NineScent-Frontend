@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api/cart';
+const API_BASE_URL = 'http://13.125.170.208/api/cart';
 
 export const cartApi = {
   // 장바구니 조회
