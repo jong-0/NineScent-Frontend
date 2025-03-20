@@ -1,10 +1,12 @@
 import axios from 'axios';
 
+const API_BASE_URL = 'http://13.125.170.208';
+
 export default {
   async getOrderSummary(userNo) {
     try {
       const { data } = await axios.get(
-        `api/orderhist/summary/${userNo}`
+        `${API_BASE_URL}/api/orderhist/summary/${userNo}`
       );
       console.log(data);
 
@@ -19,7 +21,7 @@ export default {
   async getRecentOrders(userNo) {
     try {
       const { data } = await axios.get(
-        `api/orderhist/recent/${userNo}`
+        `${API_BASE_URL}/api/orderhist/recent/${userNo}`
       );
       console.log(data);
 
@@ -34,7 +36,7 @@ export default {
   async getAllOrders(userNo, page) {
     try {
       const { data } = await axios.get(
-        `api/orderhist/${userNo}?page=${page}`
+        `${API_BASE_URL}/api/orderhist/${userNo}?page=${page}`
       );
       console.log(data);
 
@@ -49,7 +51,7 @@ export default {
   async getOrderDetail(orderId) {
     try {
       const { data } = await axios.get(
-        `api/orderhist/detail/${orderId}`
+        `${API_BASE_URL}/api/orderhist/detail/${orderId}`
       );
       console.log(data);
 
